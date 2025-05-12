@@ -1,1 +1,4 @@
 /target
+
+# this file simply contains zip and tar.gz files for cobalt releases (these archives go on github releases, so there's no need to expose the folder)
+releases/

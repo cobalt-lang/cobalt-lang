@@ -12,6 +12,7 @@ pub enum TokenType {
     Return, // return mycoolvalue
 
     // Operators and Symbols
+    Colon, // :  
     BinaryOperator, // + - * / %
     ComparisonOperator, // < > == <= >= !=
     Equals, // =
