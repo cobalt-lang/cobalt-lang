@@ -32,6 +32,6 @@ jobs:
         with:
           name: cobalt-${{ env.TAG_NAME }}-windows-x86_64
           path: |
-            target/${{ matrix.target }}/release/cbproj
-            target/${{ matrix.target }}/release/cobalt
-            target/${{ matrix.target }}/release/cobalt-lang
+            target/${{ matrix.target }}/release/cbproj.exe
+            target/${{ matrix.target }}/release/cobalt.exe
+            target/${{ matrix.target }}/release/cobalt-lang.exe
