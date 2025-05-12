@@ -90,6 +90,10 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
                 tokens.push(Token { value: ch.to_string(), r#type: TokenType::Equals });
                 l.read();
             }
+            ':' => {
+                tokens.push(Token { value: ch.to_string(), r#type: TokenType::Colon });
+                l.read();
+            }
 
             ch if is_skippable(ch) => {
                 l.read(); // just skip it

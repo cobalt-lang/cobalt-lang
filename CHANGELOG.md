@@ -1,3 +1,18 @@
+# v0.3.0
+
+Cross-platform support!
+
+## Added
+
+- Added prebuilt binaries for the following platforms:
+    - Linux AMD64
+    - Linux ARM64
+    - Linux RISCV64
+    - macOS AMD64
+    - macOS ARM64
+- Added `:` symbol to the lexer.
+- Added `.cargo/config.toml`, which is configured in favor of a Linux AMD64 host system.
+
 # v0.2.0
 
 Implemented a lexer for Cobalt.
