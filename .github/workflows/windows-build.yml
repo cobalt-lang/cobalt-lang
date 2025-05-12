@@ -4,34 +4,34 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
     name: Build for Windows (x86_64)
     runs-on: windows-latest
 
-    strategy:
-      matrix:
-        target: [x86_64-pc-windows-msvc]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Get the tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags --abbrev=0)
+          echo "TAG_NAME=$TAG" >> $GITHUB_ENV
 
       - name: Install Rust target
-        run: rustup target add ${{ matrix.target }}
+        run: rustup target add x86_64-pc-windows-msvc
 
       - name: Build all binaries
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target x86_64-pc-windows-msvc
 
       - name: Upload built binaries
         uses: actions/upload-artifact@v4
         with:
           name: cobalt-${{ env.TAG_NAME }}-windows-x86_64
           path: |
-            target/${{ matrix.target }}/release/cbproj.exe
-            target/${{ matrix.target }}/release/cobalt.exe
-            target/${{ matrix.target }}/release/cobalt-lang.exe
+            target/x86_64-pc-windows-msvc/release/cbproj.exe
+            target/x86_64-pc-windows-msvc/release/cobalt.exe
+            target/x86_64-pc-windows-msvc/release/cobalt-lang.exe
