@@ -1,3 +1,16 @@
+# v0.3.1
+
+Changes to Windows binaries
+
+## Changed
+
+- Windows binaries are now linked with MSVC (like in v0.2.0) rather than MinGW (like in v0.3.0), this is because the v0.3.0 binaries were bigger than expected and we'd like to keep the size at a minimum.
+- .cargo/config.toml removes the x86_64-pc-windows-gnu target settings.
+
+## Note
+
+- This update does not change anything compared to `v0.3.0` functionality wise. If you aren't on Windows, this update will not benefit you in any way.
+
 # v0.3.0
 
 Cross-platform support!
