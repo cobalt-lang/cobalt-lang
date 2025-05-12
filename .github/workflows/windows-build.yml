@@ -1,4 +1,4 @@
-name: Build macOS Binaries
+name: Build Windows Binaries
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
 
 jobs:
   build:
-    name: Build for macOS (x86_64 + aarch64)
-    runs-on: macos-latest
+    name: Build for Windows (x86_64)
+    runs-on: windows-latest
 
     strategy:
       matrix:
-        target: [x86_64-apple-darwin, aarch64-apple-darwin]
+        target: [x86_64-pc-windows-msvc]
 
     steps:
       - name: Checkout repository
@@ -30,7 +30,7 @@ jobs:
       - name: Upload built binaries
         uses: actions/upload-artifact@v4
         with:
-          name: cobalt-${{ env.TAG_NAME }}-darwin-aarch64
+          name: cobalt-${{ env.TAG_NAME }}-windows-x86_64
           path: |
             target/${{ matrix.target }}/release/cbproj
             target/${{ matrix.target }}/release/cobalt
