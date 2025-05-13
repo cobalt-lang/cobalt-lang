@@ -18,7 +18,7 @@ jobs:
       - name: Get the tag
         run: |
           git fetch --tags --force
-          $tag = git describe --tags --abbrev=0 --always)
+          $tag = git describe --tags --abbrev=0 --always
           echo "TAG_NAME=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install Rust target
