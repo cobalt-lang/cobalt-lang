@@ -1,4 +1,4 @@
-# v0.3.2
+# v0.3.1
 
 Changes to Windows binaries
 
@@ -10,10 +10,6 @@ Changes to Windows binaries
 ## Note
 
 - This update does not change anything compared to `v0.3.0` functionality wise. If you aren't on Windows, this update will not benefit you in any way.
-
-# v0.3.1
-
-ISSUES WITH THIS GIT TAG LEAD TO IT BEING SKIPPED.
 
 # v0.3.0
 
