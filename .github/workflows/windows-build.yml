@@ -18,8 +18,8 @@ jobs:
       - name: Get the tag
         run: |
           git fetch --tags --force
-          TAG=$(git describe --tags --abbrev=0 --always)
-          echo "TAG_NAME=$TAG" >> $GITHUB_ENV
+          $tag = git describe --tags --abbrev=0 --always)
+          echo "TAG_NAME=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install Rust target
         run: rustup target add x86_64-pc-windows-msvc
