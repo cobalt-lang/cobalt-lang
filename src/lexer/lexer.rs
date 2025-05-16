@@ -1,30 +1,28 @@
-use std::collections::HashMap;
+use phf::phf_map;
 
 use super::tokens::{Token, TokenType};
+
+static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
+    "let" => TokenType::Let,
+    "const" => TokenType::Const,
+    "fn" => TokenType::Fn,
+    "return" => TokenType::Return
+};
 
 pub struct Lexer {
     pub src: Vec<char>,
     pos: usize,
-    keywords: HashMap<String, TokenType>
 }
 
 impl Lexer {
     pub fn new(src: Vec<char>) -> Lexer {
-        let mut keywords: HashMap<String, TokenType> = Default::default();
-
-        keywords.insert("let".to_string(), TokenType::Let);
-        keywords.insert("const".to_string(), TokenType::Const);
-        keywords.insert("fn".to_string(), TokenType::Fn);
-        keywords.insert("return".to_string(), TokenType::Return);
-
         Self {
             src,
-            pos: 0,
-            keywords
+            pos: 0
         }
     }
 
-    pub fn peek(&self) -> char {
+    fn peek(&self) -> char {
         if self.pos >= self.src.len() {
             // sentinel value
             return '\0'
@@ -32,7 +30,7 @@ impl Lexer {
         self.src[self.pos]
     }
 
-    pub fn read(&mut self) -> char {
+    fn read(&mut self) -> char {
         let ch = self.peek();
         self.pos += 1;
         ch
@@ -46,7 +44,7 @@ impl Lexer {
 // INTERNAL FUNCTIONS BELOW
 
 fn is_alpha(ch: char) -> bool {
-    (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
+    ('a'..='z').contains(&ch) || ('A'..='Z').contains(&ch) || ch == '_'
 }
 
 fn is_skippable(ch: char) -> bool {
@@ -54,7 +52,7 @@ fn is_skippable(ch: char) -> bool {
 }
 
 fn isint(ch: char) -> bool {
-    ch >= '0' && ch <= '9'
+    ('0'..='9').contains(&ch)
 }
 
 // LEXER FUNCTION BELOW (wrapped by the lex method in the Lexer struct)
@@ -119,11 +117,11 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
                     ident += next_char.as_str();
                 }
 
-                if let Some(keyword_type) = l.keywords.get(&ident) {
+                if let Some(&keyword_type) = KEYWORDS.get(ident.as_str()) {
                 // get the tokentype from the keywords
                 tokens.push(Token { 
                     value: ident, 
-                    r#type: keyword_type.clone() 
+                    r#type: keyword_type
                 });
                 } else {
                     // default to identifier

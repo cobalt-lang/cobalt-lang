@@ -1,3 +1,15 @@
+# v0.4.0
+
+New parser implementation and lexer improvements!
+
+## Added
+
+- Added parser implementation (can make Binary Expressions for now)
+
+## Changed
+
+- Lexer is now more efficient because it does not use any more cloning. It also uses the `phf` crate to store keywords instead of regular HashMaps.
+
 # v0.3.1
 
 Changes to Windows binaries

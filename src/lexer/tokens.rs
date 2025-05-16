@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum TokenType {
     // TYPES
     Number,
@@ -21,6 +21,7 @@ pub enum TokenType {
     EOF // pushed at end of tokenization
 }
 
+#[derive(Debug, Clone)]
 pub struct Token {
     pub value: String,
     pub r#type: TokenType
