@@ -1,3 +1,13 @@
+# v0.5.0
+
+New bytecode code generator + interpreter! <bt>
+Essentially, the system works similar to Java.
+
+## Added
+
+- Code generator, compiles an AST tree into bytecode.
+- Interpreter, interprets compiled bytecode (stack based system)
+
 # v0.4.0
 
 New parser implementation and lexer improvements!

@@ -3,6 +3,7 @@
 
 mod lexer;
 mod parser;
+mod interpreter;
 
 fn main() {
     let src = "(774 + 123) * 77 / 4 - (85 * 3)";
