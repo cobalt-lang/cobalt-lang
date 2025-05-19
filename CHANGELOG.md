@@ -1,4 +1,4 @@
-# v0.5.0
+# v0.5.0 (not released yet)
 
 New bytecode code generator + interpreter! <bt>
 Essentially, the system works similar to Java.
@@ -6,7 +6,11 @@ Essentially, the system works similar to Java.
 ## Added
 
 - Code generator, compiles an AST tree into bytecode.
-- Interpreter, interprets compiled bytecode (stack based system)
+- Interpreter, interprets compiled bytecode (stack based system) **TODO: Make arithmetic operations less repetitive (I have an idea, it will save ~180 lines of code)**
+
+## Changes
+
+- Lexer now uses `.is_ascii_lowercase()`, `is_ascii_uppercase()`, and `is_ascii_digit()` functions on characters instead of manually searching ranges.
 
 # v0.4.0
 

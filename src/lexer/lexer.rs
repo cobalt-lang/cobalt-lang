@@ -44,7 +44,7 @@ impl Lexer {
 // INTERNAL FUNCTIONS BELOW
 
 fn is_alpha(ch: char) -> bool {
-    ('a'..='z').contains(&ch) || ('A'..='Z').contains(&ch) || ch == '_'
+    ch.is_ascii_lowercase() || ch.is_ascii_uppercase() || ch == '_'
 }
 
 fn is_skippable(ch: char) -> bool {
@@ -52,7 +52,7 @@ fn is_skippable(ch: char) -> bool {
 }
 
 fn isint(ch: char) -> bool {
-    ('0'..='9').contains(&ch)
+    ch.is_ascii_digit()
 }
 
 // LEXER FUNCTION BELOW (wrapped by the lex method in the Lexer struct)

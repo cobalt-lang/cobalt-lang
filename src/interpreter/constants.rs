@@ -22,9 +22,9 @@ pub const LT: u8 = 0x0a; // PUSH_INT 3, PUSH_INT 5, LT
 pub const GT: u8 = 0x0b; // PUSH_INT 5, PUSH_INT 3, GT
 
 // CONTROL FLOW
-pub const JMP: u8 = 0x0c; // JMP <address>, The program starts at address 0, each new line/newopcode is a new address.
-pub const JMP_IF_TRUE: u8 = 0x0d; // PUSH_INT 1, JMP_IF_TRUE <address>, 1 is a truthy value
-pub const JMP_IF_FALSE: u8 = 0x0e; // PUSH_INT 0, JMP_IF_FALSE <address>, 0 is a falsy value
+pub const JMP: u8 = 0x0c; // JMP <address>, The program starts at address 0, each new byte is a new address. the IP variable also refers to an address, for reference.
+pub const JMP_IF_TRUE: u8 = 0x0d; // PUSH_INT 1, JMP_IF_TRUE <address>, 1 is a truthy value, any non zero value is truthy. If the popped value in the stack is != 1 it will not jump.
+pub const JMP_IF_FALSE: u8 = 0x0e; // PUSH_INT 0, JMP_IF_FALSE <address>, 0 is a falsy value, if the popped value in the stack is != 0, it will not jump.
 pub const CALL: u8 = 0x0f; // CALL 0
 
 // FUNCTION RELATED

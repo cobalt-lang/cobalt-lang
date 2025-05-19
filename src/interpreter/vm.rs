@@ -1,6 +1,6 @@
 // have three vecs, vec 1 is the stack, vec 2 is the global vars, vec 3 is the local vars
 
-use std::{collections::HashMap, process};
+use std::{collections::HashMap, fmt::format, process};
 
 use super::constants;
 
@@ -60,7 +60,7 @@ impl Opcode {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 enum Value {
     Int(i64),
     Str(String)
@@ -70,8 +70,9 @@ pub struct VM {
     bytecode: Vec<u8>,
     ip: usize,
     stack: Vec<Value>,
-    global: HashMap<String, Value>,
-    local: HashMap<String, Value>,
+    global: HashMap<usize, Value>,
+    labels: Vec<usize>,
+    local: HashMap<usize, Value>,
     debug_mode: bool
 }
 
@@ -82,6 +83,7 @@ impl VM {
             ip: 0,
             stack: Vec::new(),
             global: HashMap::new(),
+            labels: Vec::new(),
             local: HashMap::new(),
             debug_mode
         }
@@ -99,9 +101,9 @@ impl VM {
 
         if magic == constants::MAGIC_NUMBER {
             self.ip += 4;  // Move the instruction pointer past the magic number
-            return true
+            true
         } else {
-            return false
+            false
         }
     }
 
@@ -148,13 +150,205 @@ impl VM {
                             self.stack.push(Value::Int(left_val + right_val));
                         }
                         (Value::Str(left_str), Value::Str(right_str)) => {
-                            self.stack.push(Value::Str(left_str + &right_str));
+                            self.stack.push(Value::Str(format!("{}{}", left_str, right_str)));
                         }
                         _ => {
                             println!("VM Error: Mismatched types on addition operation!");
                             process::exit(1);
                         }
                     }
+                }
+                Some(Opcode::Sub) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            self.stack.push(Value::Int(left_val - right_val));
+                        }
+                        (Value::Str(_left_str), Value::Str(_right_str)) => {
+                            println!("VM Error: Cannot do subtraction operation on strings!");
+                            process::exit(1);
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on subtraction operation!");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Mul) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            self.stack.push(Value::Int(left_val * right_val));
+                        }
+                        (Value::Str(_left_str), Value::Str(_right_str)) => {
+                            println!("VM Error: Cannot do multiplication operation on strings!");
+                            process::exit(1);
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on multiplication operation!");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Div) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            self.stack.push(Value::Int(left_val / right_val));
+                        }
+                        (Value::Str(_left_str), Value::Str(_right_str)) => {
+                            println!("VM Error: Cannot do division operation on strings!");
+                            process::exit(1);
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on division operation!");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Mod) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            self.stack.push(Value::Int(left_val % right_val));
+                        }
+                        (Value::Str(_left_str), Value::Str(_right_str)) => {
+                            println!("VM Error: Cannot do modulus operation on strings!");
+                            process::exit(1);
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on modulus operation!");
+                            process::exit(1)
+                        }
+                    }
+                }
+                Some(Opcode::Eq) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            if left_val == right_val {
+                                self.stack.push(Value::Int(1));
+                            } else {
+                                self.stack.push(Value::Int(0));
+                            }
+                        }
+                        (Value::Str(left_str), Value::Str(right_str)) => {
+                            if left_str == right_str {
+                                self.stack.push(Value::Int(1));
+                            } else {
+                                self.stack.push(Value::Int(0));
+                            }
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on == comparison!");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Neq) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            if left_val != right_val {
+                                self.stack.push(Value::Int(1));
+                            } else {
+                                self.stack.push(Value::Int(0));
+                            }
+                        }
+                        (Value::Str(left_str), Value::Str(right_str)) => {
+                            if left_str != right_str {
+                                self.stack.push(Value::Int(1));
+                            } else {
+                                self.stack.push(Value::Int(0));
+                            }
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on != comparison!");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Lt) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            if left_val < right_val {
+                                self.stack.push(Value::Int(1));
+                            } else {
+                                self.stack.push(Value::Int(0));
+                            }
+                        }
+                        (Value::Str(_left_str), Value::Str(_right_str)) => {
+                            println!("VM Error: Strings cannot be compared with the < comparison operator!");
+                            process::exit(1);
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on < comparison!");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Gt) => {
+                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match (left, right) {
+                        (Value::Int(left_val), Value::Int(right_val)) => {
+                            if left_val > right_val {
+                                self.stack.push(Value::Int(1));
+                            } else {
+                                self.stack.push(Value::Int(0));
+                            }
+                        }
+                        (Value::Str(_left_str), Value::Str(_right_str)) => {
+                            println!("VM Error: Strings cannot be compared with the > comparison operator!");
+                            process::exit(1);
+                        }
+                        _ => {
+                            println!("VM Error: Mismatched types on > comparison!");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Jmp) => {
+                    self.ip = self.fetch_u64().try_into().expect("VM Error: Attempted to do JMP operation, but converting the address into a usize failed!");
+                }
+                Some(Opcode::JmpIfTrue) => {
+                    let address = self.fetch_u64();
+                    let condition = self.stack.pop().expect("VM Error: Stack underflow!");
+                    if condition != Value::Int(0) {
+                        self.ip = address.try_into().expect("VM Error: Attempted to do JMP_IF_TRUE operation, but converting the address into a usize failed!");
+                    }
+                }
+                Some(Opcode::JmpIfFalse) => {
+                    let address = self.fetch_u64();
+                    let condition = self.stack.pop().expect("VM Error: Stack underflow!");
+                    if condition == Value::Int(0) {
+                        self.ip = address.try_into().expect("VM Error: Attempted to do JMP_IF_FALSE operation, but converting the address to a usize failed!");
+                    }
+                }
+                Some(Opcode::Load) => {
+                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do LOAD operation, but converting the variable name into a usize failed!");
+                    let value = self.global.get(&index).expect("VM Error: Tried to load a variable that does not exist!");
+                    self.stack.push(value.clone());
+                }
+                Some(Opcode::Store) => {
+                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do STORE operation, but converting the variable name into a usize failed!");
+                    self.global.insert(index, self.stack.pop().expect("VM Error: Stack underflow!"));
                 }
                 Some(Opcode::Halt) => {
                     if self.debug_mode {
