@@ -25,11 +25,11 @@ pub const GT: u8 = 0x0b; // PUSH_INT 5, PUSH_INT 3, GT
 pub const JMP: u8 = 0x0c; // JMP <address>, The program starts at address 0, each new byte is a new address. the IP variable also refers to an address, for reference.
 pub const JMP_IF_TRUE: u8 = 0x0d; // PUSH_INT 1, JMP_IF_TRUE <address>, 1 is a truthy value, any non zero value is truthy. If the popped value in the stack is != 1 it will not jump.
 pub const JMP_IF_FALSE: u8 = 0x0e; // PUSH_INT 0, JMP_IF_FALSE <address>, 0 is a falsy value, if the popped value in the stack is != 0, it will not jump.
-pub const CALL: u8 = 0x0f; // CALL 0
+pub const CALL: u8 = 0x0f; // CALL <address>, it's similar to JMP, but it also saves the next opcode's IP to the call stack
 
 // FUNCTION RELATED
 
-pub const RET: u8 = 0x10; // PUSH_INT 5, RET
+pub const RET: u8 = 0x10; // RET (it changes the IP to the most recent one in the call stack)
 pub const LOAD_LOCAL: u8 = 0x11; // LOAD_LOCAL 0
 pub const STORE_LOCAL: u8 = 0x12; // STORE_LOCAL <TYPE> 0
 

@@ -6,7 +6,7 @@ Essentially, the system works similar to Java.
 ## Added
 
 - Code generator, compiles an AST tree into bytecode.
-- Interpreter, interprets compiled bytecode (stack based system) **TODO: Make arithmetic operations less repetitive (I have an idea, it will save ~180 lines of code)**
+- Interpreter, interprets compiled bytecode (stack based system) **TODO: Make arithmetic operations less repetitive (I have an idea, it will save ~180 lines of code), also once codegen is complete, convert the HashMaps for variables into vecs, more memory efficient and it'll remove the need for cloning.**
 
 ## Changes
 

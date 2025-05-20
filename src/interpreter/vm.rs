@@ -70,8 +70,8 @@ pub struct VM {
     bytecode: Vec<u8>,
     ip: usize,
     stack: Vec<Value>,
+    call_stack: Vec<usize>,
     global: HashMap<usize, Value>,
-    labels: Vec<usize>,
     local: HashMap<usize, Value>,
     debug_mode: bool
 }
@@ -82,8 +82,8 @@ impl VM {
             bytecode,
             ip: 0,
             stack: Vec::new(),
+            call_stack: Vec::new(),
             global: HashMap::new(),
-            labels: Vec::new(),
             local: HashMap::new(),
             debug_mode
         }
@@ -340,6 +340,24 @@ impl VM {
                     if condition == Value::Int(0) {
                         self.ip = address.try_into().expect("VM Error: Attempted to do JMP_IF_FALSE operation, but converting the address to a usize failed!");
                     }
+                }
+                Some(Opcode::Call) => {
+                    let address: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do CALL operation, but converting the address into a usize failed!");
+                    self.call_stack.push(self.ip);
+                    self.ip = address;
+                }
+                Some(Opcode::Ret) => {
+                    let address = self.call_stack.pop().expect("VM Error: Call stack underflow! RET operation failed.");
+                    self.ip = address;
+                }
+                Some(Opcode::LoadLocal) => {
+                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do LOAD_LOCAL operation, but converting the variable name into a usize failed!");
+                    let value = self.local.get(&index).expect("VM Error: Tried to load a local variable that does not exist!");
+                    self.local.insert(index, value.clone());
+                }
+                Some(Opcode::StoreLocal) => {
+                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do STORE operation, but converting the variable name into a usize failed!");
+                    self.local.insert(index, self.stack.pop().expect("VM Error: Stack underflow!"));
                 }
                 Some(Opcode::Load) => {
                     let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do LOAD operation, but converting the variable name into a usize failed!");
