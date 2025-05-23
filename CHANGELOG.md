@@ -1,4 +1,4 @@
-# v0.5.0 (not released yet)
+# v0.5.0
 
 New bytecode code generator + interpreter! <bt>
 Essentially, the system works similar to Java.
