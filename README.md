@@ -6,6 +6,7 @@ Right now, there is not much to look at, and it's not meant to be downloaded. It
 
 # Todo
 
+- Add help messages for cobalt, cobaltc, and cbproj (goal for v0.6.0)
 - Add support for variable declarations (goal for v0.6.0) 
 - Make VM more space efficient, as binary expression opcode matching takes up a lot of unnecessary space, I have an idea to shorten this by around 200 lines.
 - Allow for users to deifne the name of the output file when running `cobaltc compile`.
