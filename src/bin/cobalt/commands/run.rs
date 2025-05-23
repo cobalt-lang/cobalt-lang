@@ -1,31 +1,28 @@
-use cobalt_lang::interpreter::vm::VM;
-use cobalt_lang::interpreter::constants;
-use cobalt_lang::utils::bytes;
+use std::path::PathBuf;
+use std::{env, process};
 
-// PLACEHOLDER FUNCTION FOR NOW, IT RUNS A PREMADE BYTECODE ARRAY
+use cobalt_lang::interpreter::vm;
+use cobalt_lang::utils::files_u8;
 
-pub fn run() {
-    let mut bytecode: Vec<u8> = vec![];
-    bytecode.extend(constants::MAGIC_NUMBER_U8);
-    bytecode.push(constants::PUSH_INT);
-    bytecode.extend(bytes::to_little_endian(974));
-    bytecode.push(constants::PUSH_INT);
-    bytecode.extend(bytes::to_little_endian(26));
-    bytecode.push(constants::ADD);
-    bytecode.push(constants::STORE); // let x: int = 974 + 26 example
-    bytecode.extend(bytes::to_little_endian(0));
-    bytecode.push(constants::PUSH_INT);
-    bytecode.extend(bytes::to_little_endian(174));
-    bytecode.push(constants::LOAD);
-    bytecode.extend(bytes::to_little_endian(0));
-    bytecode.push(constants::ADD); // x + 174 example
-    bytecode.push(constants::PUSH_INT);
-    bytecode.extend(bytes::to_little_endian(1174));
-    bytecode.push(constants::EQ); // 1174 == x example
-    bytecode.push(constants::HALT);
+pub fn run(args: Vec<String>) {
+    // executable path, command arg, file name arg
+    if args.len() < 3 {
+        eprintln!("Error: Expected the name of the file! Usage: cobalt run <file name>");
+        process::exit(1);
+    }
 
-    // THE RESULT OF THIS BYTECODE SHOULD BE 1
+    let mut debug_mode: bool = false;
 
-    let mut vm = VM::new(bytecode, true);
+    if args.contains(&"--debug".to_string()) {
+        debug_mode = true
+    }
+
+    let file_path: PathBuf = env::current_dir().unwrap_or_else(|_| {
+        eprintln!("Error: Could not find current directory");
+        std::process::exit(1);
+    }).join(args.get(2).unwrap());
+
+    let bytecode: Vec<u8> = files_u8::read_file_to_vec(file_path.to_str().expect("Error: Failed to convert working directory into a string."));
+    let mut vm = vm::VM::new(bytecode, debug_mode);
     vm.interpret();
 }

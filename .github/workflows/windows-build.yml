@@ -34,4 +34,4 @@ jobs:
           path: |
             target/x86_64-pc-windows-msvc/release/cbproj.exe
             target/x86_64-pc-windows-msvc/release/cobalt.exe
-            target/x86_64-pc-windows-msvc/release/cobalt-lang.exe
+            target/x86_64-pc-windows-msvc/release/cobaltc.exe

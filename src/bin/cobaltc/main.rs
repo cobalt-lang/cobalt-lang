@@ -1,3 +1,20 @@
+mod commands;
+
+use std::{env, process::exit};
+
 fn main() {
-    todo!("Will be a AST > bytecode compiler.")
+    let args: Vec<String> = env::args().collect();
+    if args.len() <= 1 {
+        exit(0);
+    }
+    let cmd = args[1].as_str();
+    
+    match cmd {
+        "version" => commands::version::version(),
+        "compile" => commands::compile::compile(args),
+        _ => {
+            println!("Invalid command, printing help message:");
+
+        }
+    }
 }

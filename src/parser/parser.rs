@@ -117,7 +117,7 @@ impl Parser {
             }
 
             TokenType::Number => {
-                ast::Expr::NumericLiteral(ast::NumericLiteral { kind: ast::NodeType::NumericLiteral, value: self.eat().value.parse::<f64>().unwrap() })
+                ast::Expr::NumericLiteral(ast::NumericLiteral { kind: ast::NodeType::NumericLiteral, value: self.eat().value.parse::<i64>().unwrap() })
             }
 
             TokenType::OpenParen => {

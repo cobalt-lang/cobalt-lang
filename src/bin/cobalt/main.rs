@@ -11,7 +11,7 @@ fn main() {
     
     match cmd {
         "version" => commands::version::version(),
-        "run" => commands::run::run(),
+        "run" => commands::run::run(args),
         _ => {
             println!("Invalid command, printing help message:");
 

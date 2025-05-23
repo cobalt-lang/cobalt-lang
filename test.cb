@@ -1,8 +1,1 @@
-# Welcome to the Cobalt test file!
-# This is mainly meant to test the interpreter for proper functionality, but you can also see demos of all kinds of Cobalt code in here!
-# You can get an idea of the syntax, functions, keywords, etc!
-# The syntax should be similar to TypeScript, Rust, and Go!
-
-let int_test: int = (24 + 48) * 2 / 4 ## Should output 36
-let float_test: float = (24.0 + 7.0) / 3.0 * 4.0 # Should output 41.333333333
-let bool_test: bool = false # Should output false, not much to test here except for if statements.
+(774 + 123) * 77 / 4 - (85 * 3)

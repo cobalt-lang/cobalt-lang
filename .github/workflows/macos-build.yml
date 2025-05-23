@@ -46,4 +46,4 @@ jobs:
           path: |
             target/${{ matrix.target }}/release/cbproj
             target/${{ matrix.target }}/release/cobalt
-            target/${{ matrix.target }}/release/cobalt-lang
+            target/${{ matrix.target }}/release/cobaltc

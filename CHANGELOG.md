@@ -6,11 +6,18 @@ Essentially, the system works similar to Java.
 ## Added
 
 - Code generator, compiles an AST tree into bytecode.
-- Interpreter, interprets compiled bytecode (stack based system) **TODO: Make arithmetic operations less repetitive (I have an idea, it will save ~180 lines of code), also once codegen is complete, convert the HashMaps for variables into vecs, more memory efficient and it'll remove the need for cloning.**
+- Interpreter, interprets compiled bytecode (stack based system)
+- Todo section to the README.md.
+
+## Removed
+
+- Removed the main.rs file (used for testing the lexer, parser, codegen, and VM initially), now you compile the source into bytecode with `cobaltc` and interpret it with `cobalt`.
 
 ## Changes
 
 - Lexer now uses `.is_ascii_lowercase()`, `is_ascii_uppercase()`, and `is_ascii_digit()` functions on characters instead of manually searching ranges.
+- Floating point and integer values are now seperate, not combined.
+- The Windows and macOS workflows now account for the binary name changes.
 
 # v0.4.0
 

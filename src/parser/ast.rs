@@ -44,5 +44,5 @@ pub struct Identifier {
 #[derive(Debug, Clone)]
 pub struct NumericLiteral {
     pub kind: NodeType, // Always NodeType::NumericLiteral
-    pub value: f64,
+    pub value: i64,
 }

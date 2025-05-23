@@ -1,11 +1,11 @@
 // have three vecs, vec 1 is the stack, vec 2 is the global vars, vec 3 is the local vars
 
-use std::{collections::HashMap, fmt::format, process};
+use std::{collections::HashMap, process};
 
 use super::constants;
 
 #[derive(Debug)]
-enum Opcode {
+pub enum Opcode {
     PushInt,
     PushStr,
     Pop,
@@ -109,7 +109,7 @@ impl VM {
 
     fn fetch_byte(&mut self) -> u8 {
         if self.ip >= self.bytecode.len() {
-            println!("VM Error: Out of bounds access attempted! The VM was looking for an opcode but found nothing.");
+            eprintln!("VM Error: Out of bounds access attempted! The VM was looking for an opcode but found nothing.");
             process::exit(1);
         }
         let byte = self.bytecode[self.ip];
@@ -119,7 +119,7 @@ impl VM {
 
     fn fetch_u64(&mut self) -> u64 {
         if self.ip + 8 >= self.bytecode.len() {
-            println!("VM Error: Out of bounds access attempted! The VM was looking for a value but found nothing (or not enough bytes).");
+            eprintln!("VM Error: Out of bounds access attempted! The VM was looking for a value but found nothing (or not enough bytes).");
             process::exit(1);
         }
         let mut buf = [0u8; 8];
@@ -130,7 +130,7 @@ impl VM {
 
     pub fn interpret(&mut self) {
         if !self.validate_bytecode() {
-            println!("VM Error: Not a valid bytecode file!");
+            eprintln!("VM Error: Not a valid bytecode file!");
             process::exit(1);
         }
 
@@ -153,7 +153,7 @@ impl VM {
                             self.stack.push(Value::Str(format!("{}{}", left_str, right_str)));
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on addition operation!");
+                            eprintln!("VM Error: Mismatched types on addition operation!");
                             process::exit(1);
                         }
                     }
@@ -167,11 +167,11 @@ impl VM {
                             self.stack.push(Value::Int(left_val - right_val));
                         }
                         (Value::Str(_left_str), Value::Str(_right_str)) => {
-                            println!("VM Error: Cannot do subtraction operation on strings!");
+                            eprintln!("VM Error: Cannot do subtraction operation on strings!");
                             process::exit(1);
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on subtraction operation!");
+                            eprintln!("VM Error: Mismatched types on subtraction operation!");
                             process::exit(1);
                         }
                     }
@@ -185,11 +185,11 @@ impl VM {
                             self.stack.push(Value::Int(left_val * right_val));
                         }
                         (Value::Str(_left_str), Value::Str(_right_str)) => {
-                            println!("VM Error: Cannot do multiplication operation on strings!");
+                            eprintln!("VM Error: Cannot do multiplication operation on strings!");
                             process::exit(1);
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on multiplication operation!");
+                            eprintln!("VM Error: Mismatched types on multiplication operation!");
                             process::exit(1);
                         }
                     }
@@ -203,11 +203,11 @@ impl VM {
                             self.stack.push(Value::Int(left_val / right_val));
                         }
                         (Value::Str(_left_str), Value::Str(_right_str)) => {
-                            println!("VM Error: Cannot do division operation on strings!");
+                            eprintln!("VM Error: Cannot do division operation on strings!");
                             process::exit(1);
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on division operation!");
+                            eprintln!("VM Error: Mismatched types on division operation!");
                             process::exit(1);
                         }
                     }
@@ -221,11 +221,11 @@ impl VM {
                             self.stack.push(Value::Int(left_val % right_val));
                         }
                         (Value::Str(_left_str), Value::Str(_right_str)) => {
-                            println!("VM Error: Cannot do modulus operation on strings!");
+                            eprintln!("VM Error: Cannot do modulus operation on strings!");
                             process::exit(1);
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on modulus operation!");
+                            eprintln!("VM Error: Mismatched types on modulus operation!");
                             process::exit(1)
                         }
                     }
@@ -250,7 +250,7 @@ impl VM {
                             }
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on == comparison!");
+                            eprintln!("VM Error: Mismatched types on == comparison!");
                             process::exit(1);
                         }
                     }
@@ -275,7 +275,7 @@ impl VM {
                             }
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on != comparison!");
+                            eprintln!("VM Error: Mismatched types on != comparison!");
                             process::exit(1);
                         }
                     }
@@ -293,11 +293,11 @@ impl VM {
                             }
                         }
                         (Value::Str(_left_str), Value::Str(_right_str)) => {
-                            println!("VM Error: Strings cannot be compared with the < comparison operator!");
+                            eprintln!("VM Error: Strings cannot be compared with the < comparison operator!");
                             process::exit(1);
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on < comparison!");
+                            eprintln!("VM Error: Mismatched types on < comparison!");
                             process::exit(1);
                         }
                     }
@@ -315,11 +315,11 @@ impl VM {
                             }
                         }
                         (Value::Str(_left_str), Value::Str(_right_str)) => {
-                            println!("VM Error: Strings cannot be compared with the > comparison operator!");
+                            eprintln!("VM Error: Strings cannot be compared with the > comparison operator!");
                             process::exit(1);
                         }
                         _ => {
-                            println!("VM Error: Mismatched types on > comparison!");
+                            eprintln!("VM Error: Mismatched types on > comparison!");
                             process::exit(1);
                         }
                     }
@@ -377,7 +377,7 @@ impl VM {
                     process::exit(0);
                 }
                 None => {
-                    println!("VM Error: Expected opcode, received: {:x}", opcode);
+                    eprintln!("VM Error: Expected opcode, received: {:x}", opcode);
                     process::exit(1);
                 }
                 _ => {
