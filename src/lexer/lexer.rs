@@ -84,6 +84,15 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
                 l.read();
             }
 
+            '#' => {
+                while l.peek() != '\n' && l.peek() != '\0' {
+                    l.read();
+                }
+                if l.peek() == '\n' {
+                    l.read(); // skip past it so we don't need to handle it later
+                }
+            }
+
             '=' => {
                 tokens.push(Token { value: ch.to_string(), r#type: TokenType::Equals });
                 l.read();

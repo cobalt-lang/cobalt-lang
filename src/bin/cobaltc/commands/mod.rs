@@ -1,2 +1,2 @@
-pub mod compile;
+pub mod build;
 pub mod version;

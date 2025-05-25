@@ -9,9 +9,14 @@ use crate::parser::ast;
 
 pub struct Codegen {
     bytecode: Vec<u8>,
-    variables: HashMap<String, usize>,
+    variables: HashMap<String, Variable>,
     next_var_id: usize, // used to map variable names (in AST) to their IDs (in bytecode, which doesn't support string names)
     labels: HashMap<String, usize>, // used to map functions to their IP (instruction pointer), aka the byte they start at
+}
+
+pub struct Variable {
+    pub constant: bool,
+    pub id: usize
 }
 
 impl Default for Codegen {
@@ -39,7 +44,7 @@ impl Codegen {
         let bytes = value.as_bytes();
         let length = bytes.len();
 
-        assert!(length <= u8::MAX as usize, "String too long to encode length in one byte");
+        assert!(length <= u8::MAX as usize, "Generator Error: String too long to encode length in one byte");
 
         let mut result = Vec::with_capacity(1 + length);
         result.push(length as u8);
@@ -48,12 +53,21 @@ impl Codegen {
         result
     }
 
-    fn set_var(&mut self, ident: &String) {
-        self.variables.insert(ident.to_string(), self.next_var_id);
+    fn set_var(&mut self, ident: &String, constant: bool) {
+        // make sure the variable doesn't exist first (takes up unnecessary memory)
+        if self.variables.contains_key(ident) {
+            eprintln!("Generator Error: Attempted to declare variable {}, which already exists! Try reassigning the variable using {} = <insert value here>", ident, ident);
+            process::exit(1);
+        }
+
+        self.variables.insert(ident.to_string(), Variable {
+            constant,
+            id: self.next_var_id
+        });
         self.next_var_id += 1;
     }
 
-    fn get_var(&mut self, ident: &String) -> &usize {
+    fn get_var(&mut self, ident: &String) -> &Variable {
         self.variables.get(ident).unwrap_or_else(|| {
             eprintln!("Generator Error: Could not find value {}, it does not exist in the current scope.", ident);
             process::exit(1);
@@ -90,13 +104,41 @@ impl Codegen {
         self.generate_operator(&binaryexpr.operator);
     }
 
+    fn generate_assignment_expr(&mut self, assignmentexpr: &ast::AssignmentExpr) {
+        // make sure the assignee is an identifier (only one currently supported)
+        let assignee = &*assignmentexpr.assignee;
+        let ident: String;
+
+        match assignee {
+            ast::Expr::Identifier(identifier) => { ident = (*identifier.symbol).to_string() },
+            _ => {
+                eprintln!("Generator Error: The left hand side of the assignment expression was not an identifier.");
+                process::exit(1);
+            }
+        }
+        // make sure the variable that the assignee is referring to exists
+        let var = self.get_var(&ident);
+        let var_id = var.id as u64;
+
+        // make sure that the variable is not constant
+
+        if var.constant {
+            eprintln!("Generator Error: Cannot assign to a constant variable, as they are immutable.");
+            process::exit(1);
+        }
+
+        self.generate_expr(&assignmentexpr.value);
+        self.bytecode.push(constants::STORE);
+        self.bytecode.extend(self.emit_u64(var_id));
+    }
+
     fn generate_expr(&mut self, expr: &ast::Expr) {
         match expr {
             ast::Expr::Binary(binary_expr) => self.generate_binary_expr(binary_expr),
             ast::Expr::Identifier(identifier) => {
                 // check if variable exists + get its id if it does
                 let val = self.get_var(&identifier.symbol);
-                let val_u64: u64 = *val as u64;
+                let val_u64: u64 = val.id as u64;
                 
                 self.bytecode.push(constants::LOAD);
                 self.bytecode.extend(self.emit_u64(val_u64));
@@ -107,6 +149,7 @@ impl Codegen {
                 self.bytecode.push(constants::PUSH_INT);
                 self.bytecode.extend(self.emit_u64(val_u64));
             }
+            ast::Expr::AssignmentExpr(assignment_expr) => self.generate_assignment_expr(assignment_expr),
         }
     }
 
@@ -131,7 +174,7 @@ impl Codegen {
         self.bytecode.push(constants::STORE);
         self.bytecode.extend(self.emit_u64(self.next_var_id as u64));
         // set the variable in the generator so the ID isn't repeated
-        self.set_var(&vardecl.identifier);
+        self.set_var(&vardecl.identifier, vardecl.constant);
     }
 
     /// Generate a bytecode array (that can be written to bytecode files and interpreted) based off the parser's produced AST.

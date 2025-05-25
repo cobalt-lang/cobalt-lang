@@ -1,6 +1,6 @@
 [package]
 name = "cobalt-lang"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 
 [dependencies]
@@ -10,3 +10,6 @@ dialoguer = "0.11.0"
 phf = { version = "0.11.3" , features = ["macros"] }
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.8.22"
+
+[profile.release]
+lto = true

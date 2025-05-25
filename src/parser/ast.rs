@@ -5,6 +5,7 @@ pub enum NodeType {
     BinaryExpr,
     Identifier,
     NumericLiteral,
+    AssignmentExpr,
 }
 
 #[derive(Debug, Clone)]
@@ -19,6 +20,7 @@ pub enum Expr {
     Binary(BinaryExpr),
     Identifier(Identifier),
     NumericLiteral(NumericLiteral),
+    AssignmentExpr(AssignmentExpr),
 }
 
 // === AST Node Definitions ===
@@ -33,6 +35,7 @@ pub struct Program {
 pub struct VariableDeclaration {
     pub kind: NodeType, // Always NodeType::VariableDeclaration
     pub identifier: String,
+    pub constant: bool, // whether or not the variable is mutable
     pub value: Expr,
 }
 
@@ -54,4 +57,11 @@ pub struct Identifier {
 pub struct NumericLiteral {
     pub kind: NodeType, // Always NodeType::NumericLiteral
     pub value: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct AssignmentExpr {
+    pub kind: NodeType,
+    pub assignee: Box<Expr>,
+    pub value: Box<Expr>
 }

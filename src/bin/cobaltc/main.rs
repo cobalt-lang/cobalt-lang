@@ -12,7 +12,7 @@ struct TopLevel {
 #[derive(FromArgs, Debug)]
 #[argh(subcommand)]
 enum Command {
-    Compile(commands::compile::Compile),
+    Build(commands::build::Build),
     Version(commands::version::Version)
 }
 
@@ -21,8 +21,8 @@ fn main() {
     let command: TopLevel = argh::from_env();
 
     match command.nested {
-        Command::Compile(compile) => {
-            commands::compile::run(compile);
+        Command::Build(build) => {
+            commands::build::run(build);
         }
         Command::Version(_) => {
             commands::version::run();

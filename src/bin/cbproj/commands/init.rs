@@ -1,3 +1,5 @@
+use argh::FromArgs;
+
 use std::collections::HashMap;
 use std::fs;
 use std::env;
@@ -44,7 +46,12 @@ pub struct CBProj {
     pub authors: Option<Vec<Author>>,
 }
 
-pub fn init() {
+#[derive(FromArgs, Debug)]
+/// Initializes a cbproj.toml file.
+#[argh(subcommand, name = "init")]
+pub struct Init {}
+
+pub fn run() {
     // Ask the following questions:
     // Project name
     // Project version (default 0.1.0)

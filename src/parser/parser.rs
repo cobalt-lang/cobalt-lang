@@ -71,7 +71,11 @@ impl Parser {
 
         match tk {
             TokenType::Let => {
-                self.parse_variable_stmt()
+                self.parse_variable_stmt(false)
+            }
+
+            TokenType::Const => {
+                self.parse_variable_stmt(true)
             }
 
             _ => {
@@ -81,7 +85,23 @@ impl Parser {
     }
 
     fn parse_expr(&mut self) -> ast::Expr {
-        self.parse_additive_expr()
+        self.parse_assignment_expr()
+    }
+
+    fn parse_assignment_expr(&mut self) -> ast::Expr {
+        let left = self.parse_additive_expr();
+
+        if self.at().r#type == TokenType::Equals {
+            self.eat(); // advance past the equals sign to get the value of the assignment expr
+            let value = self.parse_assignment_expr();
+            return ast::Expr::AssignmentExpr(ast::AssignmentExpr {
+                kind: ast::NodeType::AssignmentExpr,
+                assignee: Box::new(left),
+                value: Box::new(value)
+            })
+        }
+
+        left
     }
 
     fn parse_additive_expr(&mut self) -> ast::Expr {
@@ -145,7 +165,7 @@ impl Parser {
         }
     }
 
-    fn parse_variable_stmt(&mut self) -> ast::Stmt {
+    fn parse_variable_stmt(&mut self, mutable: bool) -> ast::Stmt {
         self.eat(); // eat the let keyword
         let ident = self.expect(TokenType::Identifier, "The variable you want to declare must have a proper name!");
         self.expect(TokenType::Equals, "Equals sign missing, variable declaration incorrect!");
@@ -154,6 +174,7 @@ impl Parser {
         ast::Stmt::VariableDeclaration(VariableDeclaration {
             kind: ast::NodeType::VariableDeclaration,
             identifier: ident.value,
+            constant: mutable,
             value
         })
     }

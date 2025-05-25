@@ -1,3 +1,27 @@
+# v0.7.0
+
+Constant variables added, reassignment expressions added!
+
+## Note
+
+This update was intended to include exponents as a feature, via the `^` operator, but due to the nature of exponents, they will be later implemented via a pow function once this language has a standard library.
+
+## Added
+
+- Added constant variables via the keyword `const`.
+- Added reassignment expressions, you can reassign variables using `x = 42`
+- Added comments, you can now add comments to files using `#` and they will continue as comments until a new line.
+
+## Changed
+
+- cobaltc's `compile` command has been renamed to `build`
+- cbproj now works under the same system as the other CLI tools.
+- Binaries for CLI tools are now compiled with link time optimization (LTO).
+
+## Bug Fixes
+
+- You can no longer reassign variables under the same identifier twice.
+
 # v0.6.0
 
 Variable declarations! Improvements to the VM and CLI tools.

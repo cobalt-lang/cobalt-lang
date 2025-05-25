@@ -9,9 +9,9 @@ use cobalt_lang::codegen::generator;
 use cobalt_lang::utils::files_u8;
 
 #[derive(FromArgs, Debug)]
-#[argh(subcommand, name = "compile")]
+#[argh(subcommand, name = "build")]
 /// Compile a .cb file into .cbx (bytecode).
-pub struct Compile {
+pub struct Build {
     #[argh(positional)]
     /// the name of the file to be compiled
     pub file: String,
@@ -23,7 +23,7 @@ pub struct Compile {
     pub debug: bool
 }
 
-pub fn run(args: Compile) {
+pub fn run(args: Build) {
     let file_path: PathBuf = env::current_dir().unwrap_or_else(|_| {
         eprintln!("Error getting current directory");
         std::process::exit(1);

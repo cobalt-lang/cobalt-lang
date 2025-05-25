@@ -1,4 +1,7 @@
-let mycoolvar = (774 + 123) * 77 / 4 - (85 * 3)
-let myothercoolvar = mycoolvar + 2 * 5
+# COMMENTS TEST
+let mycoolvar = (774 + 123) * 77 / 4 - (85 * 3) # set it to some random equation
+const myothercoolvar = mycoolvar + 8 # set this to that (17012) + 8
+mycoolvar = 2 # reassign that to be 2
 
-myothercoolvar
+mycoolvar # should push 2 to the stack
+myothercoolvar # should push 17020 to the stack
