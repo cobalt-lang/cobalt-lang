@@ -1,6 +1,6 @@
 # v0.6.0
 
-Improvements to the VM and CLI tools.
+Variable declarations! Improvements to the VM and CLI tools.
 
 ## Added
 
