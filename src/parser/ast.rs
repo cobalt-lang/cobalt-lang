@@ -1,6 +1,7 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
     Program,
+    VariableDeclaration,
     BinaryExpr,
     Identifier,
     NumericLiteral,
@@ -9,6 +10,7 @@ pub enum NodeType {
 #[derive(Debug, Clone)]
 pub enum Stmt {
     Program(Program),
+    VariableDeclaration(VariableDeclaration),
     Expr(Expr),
 }
 
@@ -25,6 +27,13 @@ pub enum Expr {
 pub struct Program {
     pub kind: NodeType, // Always NodeType::Program
     pub body: Vec<Stmt>,
+}
+
+#[derive(Debug, Clone)]
+pub struct VariableDeclaration {
+    pub kind: NodeType, // Always NodeType::VariableDeclaration
+    pub identifier: String,
+    pub value: Expr,
 }
 
 #[derive(Debug, Clone)]

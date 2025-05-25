@@ -1,5 +1,12 @@
+use argh::FromArgs;
+
 use std::env::consts::{OS, ARCH};
 use colored::Colorize;
+
+#[derive(FromArgs, Debug)]
+/// Displays the current cobalt version
+#[argh(subcommand, name = "version")]
+pub struct Version {}
 
 pub fn version() {
     let version = env!("CARGO_PKG_VERSION");

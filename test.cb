@@ -1,1 +1,4 @@
-(774 + 123) * 77 / 4 - (85 * 3)
+let mycoolvar = (774 + 123) * 77 / 4 - (85 * 3)
+let myothercoolvar = mycoolvar + 2 * 5
+
+myothercoolvar

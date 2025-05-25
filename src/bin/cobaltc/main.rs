@@ -1,20 +1,31 @@
 mod commands;
 
-use std::{env, process::exit};
+use argh::FromArgs;
+
+#[derive(FromArgs, Debug)]
+/// The compiler that converts Cobalt (.cb) files into Cobalt bytecode (.cbx) files.
+struct TopLevel {
+    #[argh(subcommand)]
+    nested: Command,
+}
+
+#[derive(FromArgs, Debug)]
+#[argh(subcommand)]
+enum Command {
+    Compile(commands::compile::Compile),
+    Version(commands::version::Version)
+}
+
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() <= 1 {
-        exit(0);
-    }
-    let cmd = args[1].as_str();
-    
-    match cmd {
-        "version" => commands::version::version(),
-        "compile" => commands::compile::compile(args),
-        _ => {
-            println!("Invalid command, printing help message:");
+    let command: TopLevel = argh::from_env();
 
+    match command.nested {
+        Command::Compile(compile) => {
+            commands::compile::run(compile);
+        }
+        Command::Version(_) => {
+            commands::version::run();
         }
     }
 }

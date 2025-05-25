@@ -1,6 +1,8 @@
 use crate::parser::ast;
 use crate::lexer::tokens::{Token, TokenType};
 
+use super::ast::VariableDeclaration;
+
 pub struct Parser {
     tokens: Vec<Token>,
     pos: usize
@@ -65,7 +67,17 @@ impl Parser {
     }
 
     fn parse_stmt(&mut self) -> ast::Stmt {
-        ast::Stmt::Expr(self.parse_expr())
+        let tk = self.at().r#type;
+
+        match tk {
+            TokenType::Let => {
+                self.parse_variable_stmt()
+            }
+
+            _ => {
+                ast::Stmt::Expr(self.parse_expr())
+            }
+        }
     }
 
     fn parse_expr(&mut self) -> ast::Expr {
@@ -131,6 +143,19 @@ impl Parser {
                 panic!("Unexpected token found during parsing!");
             }
         }
+    }
+
+    fn parse_variable_stmt(&mut self) -> ast::Stmt {
+        self.eat(); // eat the let keyword
+        let ident = self.expect(TokenType::Identifier, "The variable you want to declare must have a proper name!");
+        self.expect(TokenType::Equals, "Equals sign missing, variable declaration incorrect!");
+        let value = self.parse_expr();
+
+        ast::Stmt::VariableDeclaration(VariableDeclaration {
+            kind: ast::NodeType::VariableDeclaration,
+            identifier: ident.value,
+            value
+        })
     }
 }
 

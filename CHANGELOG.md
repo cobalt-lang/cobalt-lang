@@ -1,3 +1,30 @@
+# v0.6.0
+
+Improvements to the VM and CLI tools.
+
+## Added
+
+- Variable declarations! They do not support types yet.
+- New todos to the Todo list in README.md (in the order I prefer they be completed.)
+- All of the CLI tools now have help commands. Simply use the --help flag or help command.
+- New --debug flag for `cobaltc compile`, which prints the lexing, parsing, and codegen steps in detail.
+
+## Removed
+
+- Removed debug println statement from `utils/files_u8.rs`.
+- Removed the o.cbytes file. It has been replaced by test.cbx.
+
+## Changed
+
+- The codegen no longer has any cloning (uses references), making it more performant and memory efficient.
+- Output files from `cobaltc` now use `.cbx` as the default extension instead of `.cbytes`.
+- The `compile` command for `cobaltc` now allows you to set the name of the output (via the -o/--output flag) file, it will default to the name of the .cb file it is compiling.
+- test.cb's contents now contain the new variable example! When you run it using `cobalt run test.cb --debug` it should show the number 17022 somewhere.
+
+## Bug Fixes
+
+- Minor code refactoring in certain areas.
+
 # v0.5.0
 
 New bytecode code generator + interpreter! <bt>
@@ -13,7 +40,7 @@ Essentially, the system works similar to Java.
 
 - Removed the main.rs file (used for testing the lexer, parser, codegen, and VM initially), now you compile the source into bytecode with `cobaltc` and interpret it with `cobalt`.
 
-## Changes
+## Changed
 
 - Lexer now uses `.is_ascii_lowercase()`, `is_ascii_uppercase()`, and `is_ascii_digit()` functions on characters instead of manually searching ranges.
 - Floating point and integer values are now seperate, not combined.

@@ -1,20 +1,30 @@
 mod commands;
 
-use std::{env, process::exit};
+use argh::FromArgs;
+
+#[derive(FromArgs, Debug)]
+/// The virtual machine that interprets Cobalt bytecode (.cbx) files.
+struct TopLevel {
+    #[argh(subcommand)]
+    nested: Command,
+}
+
+#[derive(FromArgs, Debug)]
+#[argh(subcommand)]
+enum Command {
+    Run(commands::run::Run),
+    Version(commands::version::Version)
+}
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() <= 1 {
-        exit(0);
-    }
-    let cmd = args[1].as_str();
-    
-    match cmd {
-        "version" => commands::version::version(),
-        "run" => commands::run::run(args),
-        _ => {
-            println!("Invalid command, printing help message:");
+    let command: TopLevel = argh::from_env();
 
+    match command.nested {
+        Command::Run(run) => {
+            commands::run::run(run);
+        }
+        Command::Version(_) => {
+            commands::version::version();
         }
     }
 }

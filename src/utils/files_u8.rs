@@ -2,6 +2,7 @@
 
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
+use std::path::Path;
 use std::process;
 
 pub fn read_file_to_vec(file_path: &str) -> Vec<u8> {
@@ -19,7 +20,7 @@ pub fn read_file_to_vec(file_path: &str) -> Vec<u8> {
     contents
 }
 
-pub fn write_vec_to_file(file_path: &str, data: Vec<u8>) {
+pub fn write_vec_to_file(file_path: &str, data: &[u8]) {
     let mut file = OpenOptions::new()
         .write(true)
         .create(true)
@@ -30,10 +31,14 @@ pub fn write_vec_to_file(file_path: &str, data: Vec<u8>) {
             process::exit(1);
         });
 
-    file.write_all(&data).unwrap_or_else(|_| {
+    file.write_all(data).unwrap_or_else(|_| {
         eprintln!("Error: Could not write to file '{}'", file_path);
         process::exit(1);
     });
+}
 
-    println!("Successfully wrote {} bytes to '{}'", data.len(), file_path);
+pub fn get_file_name_without_extension(path: &str) -> Option<String> {
+    let path = Path::new(path);
+    
+    path.file_stem().map(|filename| filename.to_string_lossy().to_string())
 }
