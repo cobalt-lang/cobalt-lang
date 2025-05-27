@@ -353,7 +353,7 @@ impl VM {
                 Some(Opcode::LoadLocal) => {
                     let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do LOAD_LOCAL operation, but converting the variable name into a usize failed!");
                     let value = self.local.get(&index).expect("VM Error: Tried to load a local variable that does not exist!");
-                    self.local.insert(index, value.clone());
+                    self.stack.push(value.clone());
                 }
                 Some(Opcode::StoreLocal) => {
                     let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do STORE operation, but converting the variable name into a usize failed!");

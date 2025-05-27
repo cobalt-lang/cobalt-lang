@@ -1,3 +1,24 @@
+# v0.7.1 - 05/27/2025
+
+Minor features and bug fixes
+
+## Added
+
+- Identifiers can now have numbers after the first character, example: `mycoolvar1`.
+- Added dates to all the versions.
+
+## Changes
+
+- Minor changes to `test.cb` to show the new identifiers with numbers feature!
+
+## Bug Fixes
+
+- In the parser, the function `parse_variable_stmt()`, takes in a value called "mutable", which if true would make the variable constant rather than mutable. This value has been renamed to constant.
+- The parser's conditions have been reworked to avoid calling values more than once unnecessarily.
+- Error messages in the parser are slightly more concise.
+- Remove unnecessary match statement in the bytecode generator.
+- Fix minor bugs in the VM, such as an issue with LoadLocal and removing dead code, which were not going to affect the current features.
+
 # v0.7.0
 
 Constant variables added, reassignment expressions added!

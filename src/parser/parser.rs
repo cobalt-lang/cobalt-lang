@@ -56,7 +56,7 @@ impl Parser {
     pub fn produce_ast(&mut self) -> ast::Program {
         let mut program: ast::Program = ast::Program {
             kind: ast::NodeType::Program,
-            body: [].to_vec()
+            body: vec![]
         };
 
         while self.not_eof() {
@@ -107,7 +107,7 @@ impl Parser {
     fn parse_additive_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_multiplicative_expr();
 
-        while self.at().value == "+" || self.at().value == "-" {
+        while matches!(self.at().value.as_str(), "+" | "-") {
             let operator = self.eat().value;
             let right = self.parse_multiplicative_expr();
             
@@ -125,7 +125,7 @@ impl Parser {
     fn parse_multiplicative_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_primary_expr();
 
-        while self.at().value == "/" || self.at().value == "*" || self.at().value == "%" {
+        while matches!(self.at().value.as_str(), "*" | "/" | "%") {
             let operator = self.eat().value;
             let right = self.parse_primary_expr();
 
@@ -149,7 +149,7 @@ impl Parser {
             }
 
             TokenType::Number => {
-                ast::Expr::NumericLiteral(ast::NumericLiteral { kind: ast::NodeType::NumericLiteral, value: self.eat().value.parse::<i64>().unwrap() })
+                ast::Expr::NumericLiteral(ast::NumericLiteral { kind: ast::NodeType::NumericLiteral, value: self.eat().value.parse::<i64>().expect("Parser Error: Failed to parse numeric literal.") })
             }
 
             TokenType::OpenParen => {
@@ -160,21 +160,21 @@ impl Parser {
             }
 
             _ => {
-                panic!("Unexpected token found during parsing!");
+                panic!("Parser Error: Unexpected token found during parsing: {:?}", self.at());
             }
         }
     }
 
-    fn parse_variable_stmt(&mut self, mutable: bool) -> ast::Stmt {
+    fn parse_variable_stmt(&mut self, constant: bool) -> ast::Stmt {
         self.eat(); // eat the let keyword
         let ident = self.expect(TokenType::Identifier, "The variable you want to declare must have a proper name!");
-        self.expect(TokenType::Equals, "Equals sign missing, variable declaration incorrect!");
+        self.expect(TokenType::Equals, "Expected equals sign after identifier.");
         let value = self.parse_expr();
 
         ast::Stmt::VariableDeclaration(VariableDeclaration {
             kind: ast::NodeType::VariableDeclaration,
             identifier: ident.value,
-            constant: mutable,
+            constant,
             value
         })
     }

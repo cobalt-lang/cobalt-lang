@@ -51,8 +51,12 @@ fn is_skippable(ch: char) -> bool {
     ch == '\r' || ch == '\n' || ch == '\t' || ch == ' '
 }
 
-fn isint(ch: char) -> bool {
+fn is_digit(ch: char) -> bool {
     ch.is_ascii_digit()
+}
+
+fn is_alphanumeric(ch: char) -> bool {
+    is_alpha(ch) || is_digit(ch)
 }
 
 // LEXER FUNCTION BELOW (wrapped by the lex method in the Lexer struct)
@@ -106,12 +110,11 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
                 l.read(); // just skip it
             }
 
-            ch if isint(ch) => {
+            ch if is_digit(ch) => {
                 let mut num: String = "".to_string();
 
-                while isint(l.peek()) {
-                    let next_digit = l.read().to_string();
-                    num += next_digit.as_str();
+                while is_digit(l.peek()) {
+                    num.push(l.read());
                 }
 
                 tokens.push(Token { value: num, r#type: TokenType::Number });
@@ -121,9 +124,8 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
             ch if is_alpha(ch) => {
                 let mut ident: String = "".to_string();
 
-                while is_alpha(l.peek()) {
-                    let next_char = l.read().to_string();
-                    ident += next_char.as_str();
+                while is_alphanumeric(l.peek()) {
+                    ident.push(l.read());
                 }
 
                 if let Some(&keyword_type) = KEYWORDS.get(ident.as_str()) {

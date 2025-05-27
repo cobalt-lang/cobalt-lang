@@ -123,7 +123,7 @@ impl Codegen {
         // make sure that the variable is not constant
 
         if var.constant {
-            eprintln!("Generator Error: Cannot assign to a constant variable, as they are immutable.");
+            eprintln!("Generator Error: Attempted to assign to constant '{}', which is immutable.", ident);
             process::exit(1);
         }
 
@@ -190,10 +190,7 @@ impl Codegen {
 
         // iterate through statements and expressions and turn them into operations
         for stmt in ast {
-            match stmt {
-                ast::Stmt::Expr(expr) => self.generate_expr(&expr),
-                _ => self.generate_stmt(&stmt),
-            }
+            self.generate_stmt(&stmt);
         }
 
         self.bytecode.push(constants::HALT);
