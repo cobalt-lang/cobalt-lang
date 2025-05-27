@@ -19,7 +19,7 @@ Minor features and bug fixes
 - Remove unnecessary match statement in the bytecode generator.
 - Fix minor bugs in the VM, such as an issue with LoadLocal and removing dead code, which were not going to affect the current features.
 
-# v0.7.0
+# v0.7.0 - 05/25/2025
 
 Constant variables added, reassignment expressions added!
 
@@ -43,7 +43,7 @@ This update was intended to include exponents as a feature, via the `^` operator
 
 - You can no longer reassign variables under the same identifier twice.
 
-# v0.6.0
+# v0.6.0 - 05/24/2025
 
 Variable declarations! Improvements to the VM and CLI tools.
 
@@ -70,7 +70,7 @@ Variable declarations! Improvements to the VM and CLI tools.
 
 - Minor code refactoring in certain areas.
 
-# v0.5.0
+# v0.5.0 - 05/23/2025
 
 New bytecode code generator + interpreter! <bt>
 Essentially, the system works similar to Java.
@@ -91,7 +91,7 @@ Essentially, the system works similar to Java.
 - Floating point and integer values are now seperate, not combined.
 - The Windows and macOS workflows now account for the binary name changes.
 
-# v0.4.0
+# v0.4.0 - 05/16/2025
 
 New parser implementation and lexer improvements!
 
@@ -103,7 +103,7 @@ New parser implementation and lexer improvements!
 
 - Lexer is now more efficient because it does not use any more cloning. It also uses the `phf` crate to store keywords instead of regular HashMaps.
 
-# v0.3.1
+# v0.3.1 - 05/12/2025
 
 Changes to Windows binaries
 
@@ -116,7 +116,7 @@ Changes to Windows binaries
 
 - This update does not change anything compared to `v0.3.0` functionality wise. If you aren't on Windows, this update will not benefit you in any way.
 
-# v0.3.0
+# v0.3.0 - 05/11/2025
 
 Cross-platform support!
 
@@ -131,7 +131,7 @@ Cross-platform support!
 - Added `:` symbol to the lexer.
 - Added `.cargo/config.toml`, which is configured in favor of a Linux AMD64 host system.
 
-# v0.2.0
+# v0.2.0 - 05/10/2025
 
 Implemented a lexer for Cobalt.
 
@@ -144,6 +144,6 @@ Implemented a lexer for Cobalt.
 
 - `cobalt version` command now prints the version specified in [Cargo.toml](./Cargo.toml).
 
-# v0.1.0
+# v0.1.0 - 05/09/2025
 
 Initial commit
