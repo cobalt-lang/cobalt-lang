@@ -5,7 +5,7 @@ Welcome to the source code of the Cobalt programming language!
 # Installation
 
 There a couple different methods that you can use to install the Cobalt programming language to your machine. <br>
-Skip [here] to find methods for certain Linux distros.
+Skip [here](#arch-linux) to find methods for certain Linux distros.
 
 ## 1. Prebuilt Binaries
 
