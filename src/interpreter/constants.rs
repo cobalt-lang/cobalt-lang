@@ -14,6 +14,7 @@ pub const SUB: u8 = 0x05; // SUB
 pub const MUL: u8 = 0x06; // MUL
 pub const DIV: u8 = 0x07; // DIV
 pub const MOD: u8 = 0x15; // MOD
+pub const NEG: u8 = 0x17; // NEG (pops the stack, and pushes back that value as a negative value, only works on numbers)
 
 // COMPARISONS
 pub const EQ: u8 = 0x08; // PUSH INT 5, PUSH_INT 5, EQ

@@ -6,6 +6,7 @@ pub enum NodeType {
     Identifier,
     NumericLiteral,
     AssignmentExpr,
+    UnaryExpr,
 }
 
 #[derive(Debug, Clone)]
@@ -21,41 +22,42 @@ pub enum Expr {
     Identifier(Identifier),
     NumericLiteral(NumericLiteral),
     AssignmentExpr(AssignmentExpr),
+    UnaryExpr(UnaryExpr),
 }
 
 // === AST Node Definitions ===
 
 #[derive(Debug, Clone)]
 pub struct Program {
-    pub kind: NodeType, // Always NodeType::Program
+    pub kind: NodeType,
     pub body: Vec<Stmt>,
 }
 
 #[derive(Debug, Clone)]
 pub struct VariableDeclaration {
-    pub kind: NodeType, // Always NodeType::VariableDeclaration
+    pub kind: NodeType,
     pub identifier: String,
-    pub constant: bool, // whether or not the variable is mutable
+    pub constant: bool,
     pub value: Expr,
 }
 
 #[derive(Debug, Clone)]
 pub struct BinaryExpr {
-    pub kind: NodeType, // Always NodeType::BinaryExpr
+    pub kind: NodeType,
     pub left: Box<Expr>,
     pub right: Box<Expr>,
-    pub operator: String, // You could also use an enum for operators
+    pub operator: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct Identifier {
-    pub kind: NodeType, // Always NodeType::Identifier
+    pub kind: NodeType,
     pub symbol: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct NumericLiteral {
-    pub kind: NodeType, // Always NodeType::NumericLiteral
+    pub kind: NodeType,
     pub value: i64,
 }
 
@@ -63,5 +65,12 @@ pub struct NumericLiteral {
 pub struct AssignmentExpr {
     pub kind: NodeType,
     pub assignee: Box<Expr>,
+    pub value: Box<Expr>
+}
+
+#[derive(Debug, Clone)]
+pub struct UnaryExpr {
+    pub kind: NodeType,
+    pub operator: String, // +, -, ! (for if statements)
     pub value: Box<Expr>
 }

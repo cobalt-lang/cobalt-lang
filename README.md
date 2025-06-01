@@ -34,8 +34,7 @@ The CLI tools are available on the AUR, maintained officially by us. You can ins
 - 3. Make the package: `makepkg -si`
 
 # Todo
-- Add floating point values (goal for v0.8.0)
-- Add negative numbers, via unary expressions (goal for v0.8.0)
+- Add floating point values (goal for v0.8.1)
 - Make VM more space efficient, as binary expression opcode matching takes up a lot of unnecessary space, I have an idea to shorten this by around 200 lines. (goal for v0.9.0)
 - Add more debug information to the VM when running with the --debug flag, such as variable stack. (goal for v0.9.0)
 - Add if statements and loops (goal for v0.10.0)
@@ -45,3 +44,4 @@ The CLI tools are available on the AUR, maintained officially by us. You can ins
 - Try to do as little cloning as possible VM and parser do inefficient cloning.
 - More descriptive and consistent errors (always room for that!)
 - Positional errors (the error says what position in the file it's referring to)
+- Bytecode bytes to words translator (just a tool in the future, could maybe be written in Cobalt itself!)

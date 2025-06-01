@@ -1,7 +1,9 @@
 # COMMENTS TEST
 let mycoolvar1 = (774 + 123) * 77 / 4 - (85 * 3) # set it to some random equation
 const mycoolvar2 = mycoolvar1 + 8 # set this to mycoolvar1 (17012) + 8
+const mycoolvar3 = -(3 + -5 * (2 - 4) / 2) * 6
 mycoolvar1 = 2 # reassign that to be 2
 
 mycoolvar1 # should push 2 to the stack
 mycoolvar2 # should push 17020 to the stack
+mycoolvar3 # should push -48 to the stack

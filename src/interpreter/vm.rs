@@ -14,6 +14,7 @@ pub enum Opcode {
     Mul,
     Div,
     Mod,
+    Neg,
     Eq,
     Neq,
     Lt,
@@ -41,6 +42,7 @@ impl Opcode {
             0x06 => Some(Opcode::Mul),
             0x07 => Some(Opcode::Div),
             0x15 => Some(Opcode::Mod),
+            0x17 => Some(Opcode::Neg),
             0x08 => Some(Opcode::Eq),
             0x09 => Some(Opcode::Neq),
             0x0a => Some(Opcode::Lt),
@@ -226,7 +228,20 @@ impl VM {
                         }
                         _ => {
                             eprintln!("VM Error: Mismatched types on modulus operation!");
-                            process::exit(1)
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Neg) => {
+                    let value = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match value {
+                        Value::Int(val) => {
+                            self.stack.push(Value::Int(0 - val));
+                        }
+                        _ => {
+                            eprintln!("VM Error: Unsupported type for NEG operation, only numbers can be turned into negative values.");
+                            process::exit(1);
                         }
                     }
                 }

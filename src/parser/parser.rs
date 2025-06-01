@@ -123,7 +123,7 @@ impl Parser {
     }
 
     fn parse_multiplicative_expr(&mut self) -> ast::Expr {
-        let mut left = self.parse_primary_expr();
+        let mut left = self.parse_unary_expr();
 
         while matches!(self.at().value.as_str(), "*" | "/" | "%") {
             let operator = self.eat().value;
@@ -138,6 +138,21 @@ impl Parser {
         }
 
         left
+    }
+
+    fn parse_unary_expr(&mut self) -> ast::Expr {
+        // TODO: ADD ! OPERATOR WHEN IMPLEMENTING IF STATEMENTS
+        if matches!(self.at().value.as_str(), "-" | "+") {
+            let operator = self.eat().value;
+            let value = self.parse_primary_expr();
+            return ast::Expr::UnaryExpr(ast::UnaryExpr {
+                kind: ast::NodeType::UnaryExpr,
+                operator,
+                value: Box::new(value)
+            })
+        }
+
+        self.parse_primary_expr()
     }
 
     fn parse_primary_expr(&mut self) -> ast::Expr {

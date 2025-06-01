@@ -1,3 +1,17 @@
+# v0.8.0 - 06/01/2025
+
+Unary expressions!
+
+## NOTE
+
+Floating points were supposed to be released on this update, but due to the time it will take to implement, we are going to release it later. We hope to release it early the following week.
+
+## Added
+
+- Added unary expressions, which allows for negative numbers. Such as `-42`.
+- Added new `NEG` bytecode opcode, which converts a positive number into a negative one.
+- Added some new TODOs!
+
 # v0.7.1 - 05/27/2025
 
 Minor features and bug fixes
