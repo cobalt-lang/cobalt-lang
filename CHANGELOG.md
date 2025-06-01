@@ -12,6 +12,10 @@ Floating points were supposed to be released on this update, but due to the time
 - Added new `NEG` bytecode opcode, which converts a positive number into a negative one.
 - Added some new TODOs!
 
+## Changed
+
+- Prebuilt binaries are now compressed into .tar.xz files rather than .tar.gz for Linux binaries. macOS conversion from .zip to .tar.xz is also being considered.
+
 # v0.7.1 - 05/27/2025
 
 Minor features and bug fixes
