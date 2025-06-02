@@ -1,10 +1,22 @@
-# v0.8.0 - 06/01/2025
+# v0.9.0 - 06/02/2025
 
-Unary expressions!
+VM is now more efficient!
 
 ## NOTE
 
-Floating points were supposed to be released on this update, but due to the time it will take to implement, we are going to release it later. We hope to release it early the following week.
+There is still further room for efficiency! For example, left and right are popped as values from the stack very frequently for binary operations and comparisons, error messages are also pretty repetitive. These will be patched in `v0.9.1`.
+
+## Changed
+
+- VM is more efficient space-wise. 108 lines in src/interpreter/vm.rs were removed. You can find a comparison [here](https://github.com/cobalt-lang/cobalt-lang/compare/878909...a0bce1).
+
+## Removed
+
+- Removed a note from v0.8.0 as it is no longer relevant.
+
+# v0.8.0 - 06/01/2025
+
+Unary expressions!
 
 ## Added
 
