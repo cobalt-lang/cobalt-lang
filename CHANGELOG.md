@@ -1,3 +1,15 @@
+# v0.9.1 - 06/03/2025
+
+Further efficiency improvements to VM.
+
+## Added
+
+- The --debug flag for the `cobalt` CLI tool shows more information.
+
+## Changed
+
+- VM is even more efficient space wise. 
+
 # v0.9.0 - 06/02/2025
 
 VM is now more efficient!

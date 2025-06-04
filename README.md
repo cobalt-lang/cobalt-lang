@@ -34,8 +34,6 @@ The CLI tools are available on the AUR, maintained officially by us. You can ins
 - 3. Make the package: `makepkg -si`
 
 # Todo
-- Make VM more space efficient, as binary expression opcode matching takes up a lot of unnecessary space, I have an idea to shorten this by around 200 lines. (goal for v0.9.0)
-- Add more debug information to the VM when running with the --debug flag, such as variable stack. (goal for v0.9.0)
 - Add if statements and loops (goal for v0.10.0)
 - Add strings. (goal for v0.11.0)
 - Add static types for variables (goal for v0.12.0)

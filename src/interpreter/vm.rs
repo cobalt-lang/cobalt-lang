@@ -130,12 +130,8 @@ impl VM {
         u64::from_le_bytes(buf)
     }
 
-
-    // once strings come this function will not apply for ADD opcodes
-    fn binary_int_op<F>(&mut self, op: F, op_name: &str)
-    where
-        F: Fn(i64, i64) -> i64
-    {
+    // pops two values from the stack and returns them as left and right, meant for binary operations
+    fn pop_two_stack(&mut self) -> (Value, Value) {
         let right = self.stack.pop().unwrap_or_else(|| {
             eprintln!("VM Error: Stack underflow!");
             process::exit(1);
@@ -144,6 +140,15 @@ impl VM {
             eprintln!("VM Error: Stack underflow!");
             process::exit(1);
         });
+
+        (left, right)
+    }
+    // once strings come this function will not apply for ADD opcodes
+    fn binary_int_op<F>(&mut self, op: F, op_name: &str)
+    where
+        F: Fn(i64, i64) -> i64
+    {
+        let (left, right) = self.pop_two_stack();
 
         match (left, right) {
             (Value::Int(l), Value::Int(r)) => {
@@ -160,14 +165,7 @@ impl VM {
     where
         F: Fn(i64, i64) -> bool,
     {
-        let right = self.stack.pop().unwrap_or_else(|| {
-            eprintln!("VM Error: Stack underflow!");
-            process::exit(1);
-        });
-        let left = self.stack.pop().unwrap_or_else(|| {
-            eprintln!("VM Error: Stack underflow!");
-            process::exit(1);
-        });
+        let (left, right) = self.pop_two_stack();
 
         match (left, right) {
             (Value::Int(l), Value::Int(r)) => {
@@ -194,8 +192,7 @@ impl VM {
                     self.stack.push(Value::Int(value.try_into().unwrap()));
                 }
                 Some(Opcode::Add) => {
-                    let right = self.stack.pop().expect("VM Error: Stack underflow!");
-                    let left = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let (left, right) = self.pop_two_stack();
                     
                     match (left, right) {
                         (Value::Int(left_val), Value::Int(right_val)) => {
@@ -277,8 +274,9 @@ impl VM {
                 }
                 Some(Opcode::Halt) => {
                     if self.debug_mode {
-                        println!("DEBUG: Process halted!");
-                        println!("DEBUG: Stack at halt-time: {:#?}", self.stack);
+                        println!("DEBUG: Process halted! Halt-time statistics printing:");
+                        println!("DEBUG: Stack: {:#?}", self.stack);
+                        println!("DEBUG: Global variable stack: {:#?}", self.global);
                     }
 
                     process::exit(0);
