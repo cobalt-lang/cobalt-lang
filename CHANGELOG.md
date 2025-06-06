@@ -1,4 +1,4 @@
-# v0.9.2 - 06/04/2025
+# v0.9.2 - 06/05/2025
 
 Handle calculation errors in VM.
 
