@@ -1,3 +1,15 @@
+# v0.9.2 - 06/04/2025
+
+Handle calculation errors in VM.
+
+## Added
+
+- Added checks on division and modulus to make sure right hand operator is not zero.
+
+## Changed
+
+- Test files are moved into the /tests directory.
+
 # v0.9.1 - 06/03/2025
 
 Further efficiency improvements to VM.

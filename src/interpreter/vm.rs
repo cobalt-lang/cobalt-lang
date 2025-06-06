@@ -152,6 +152,14 @@ impl VM {
 
         match (left, right) {
             (Value::Int(l), Value::Int(r)) => {
+                if op_name == "division" && r == 0 {
+                    eprintln!("VM Error: Cannot divide by zero.");
+                    process::exit(1);
+                } else if op_name == "modulus" && r == 0 {
+                    eprintln!("VM Error: Cannot perform modulus by zero.");
+                    process::exit(1);
+                }
+
                 self.stack.push(Value::Int(op(l, r)));
             }
             _ => {
