@@ -10,6 +10,10 @@ pub enum TokenType {
 	Const, // const myvar = 1 (immutable)
 	Fn, // fn mycoolfn(arg: string) {}
     Return, // return mycoolvalue
+    If,
+    Else,
+    True,
+    False,
 
     // Operators and Symbols
     Colon, // :  
@@ -18,7 +22,9 @@ pub enum TokenType {
     Equals, // =
     OpenParen, // (
     CloseParen, // )
-    EOF // pushed at end of tokenization
+    OpenBrace, // {
+    CloseBrace, // }
+    EOF, // pushed at end of tokenization
 }
 
 #[derive(Debug, Clone)]

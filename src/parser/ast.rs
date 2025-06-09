@@ -2,9 +2,12 @@
 pub enum NodeType {
     Program,
     VariableDeclaration,
+    IfStatement,
+    BlockStatement,
     BinaryExpr,
     Identifier,
     NumericLiteral,
+    BooleanLiteral,
     AssignmentExpr,
     UnaryExpr,
 }
@@ -13,6 +16,8 @@ pub enum NodeType {
 pub enum Stmt {
     Program(Program),
     VariableDeclaration(VariableDeclaration),
+    IfStatement(IfStatement),
+    BlockStatement(BlockStatement),
     Expr(Expr),
 }
 
@@ -21,6 +26,7 @@ pub enum Expr {
     Binary(BinaryExpr),
     Identifier(Identifier),
     NumericLiteral(NumericLiteral),
+    BooleanLiteral(BooleanLiteral),
     AssignmentExpr(AssignmentExpr),
     UnaryExpr(UnaryExpr),
 }
@@ -42,6 +48,21 @@ pub struct VariableDeclaration {
 }
 
 #[derive(Debug, Clone)]
+pub struct IfStatement {
+    pub kind: NodeType,
+    pub test: Expr,
+    pub alternate: Option<Box<Stmt>>,
+    pub body: Box<Stmt> // either a single statement or a block statement are most common
+}
+
+// { code in here }
+#[derive(Debug, Clone)]
+pub struct BlockStatement {
+    pub kind: NodeType,
+    pub body: Vec<Stmt>,
+}
+
+#[derive(Debug, Clone)]
 pub struct BinaryExpr {
     pub kind: NodeType,
     pub left: Box<Expr>,
@@ -59,6 +80,12 @@ pub struct Identifier {
 pub struct NumericLiteral {
     pub kind: NodeType,
     pub value: i64,
+}
+
+#[derive(Debug, Clone)]
+pub struct BooleanLiteral {
+    pub kind: NodeType,
+    pub value: bool,
 }
 
 #[derive(Debug, Clone)]

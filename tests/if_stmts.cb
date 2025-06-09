@@ -1,0 +1,7 @@
+if awer {
+    let x = 5
+} else if ower {
+    let x = 7
+} else {
+    let x = 543
+}

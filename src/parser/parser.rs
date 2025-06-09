@@ -3,6 +3,8 @@ use crate::lexer::tokens::{Token, TokenType};
 
 use super::ast::VariableDeclaration;
 
+use std::process;
+
 pub struct Parser {
     tokens: Vec<Token>,
     pos: usize
@@ -76,6 +78,14 @@ impl Parser {
 
             TokenType::Const => {
                 self.parse_variable_stmt(true)
+            }
+
+            TokenType::If => {
+                self.parse_if_stmt()
+            }
+
+            TokenType::OpenBrace => {
+                self.parse_block_stmt()
             }
 
             _ => {
@@ -167,6 +177,16 @@ impl Parser {
                 ast::Expr::NumericLiteral(ast::NumericLiteral { kind: ast::NodeType::NumericLiteral, value: self.eat().value.parse::<i64>().expect("Parser Error: Failed to parse numeric literal.") })
             }
 
+            TokenType::True => {
+                self.eat(); // eat the true token
+                ast::Expr::BooleanLiteral(ast::BooleanLiteral { kind: ast::NodeType::BooleanLiteral, value: true })
+            }
+
+            TokenType::False => {
+                self.eat(); // eat the false token
+                ast::Expr::BooleanLiteral(ast::BooleanLiteral { kind: ast::NodeType::BooleanLiteral, value: false })
+            }
+
             TokenType::OpenParen => {
                 self.eat(); // eat the opening parenthesis
                 let value = self.parse_expr();
@@ -191,6 +211,51 @@ impl Parser {
             identifier: ident.value,
             constant,
             value
+        })
+    }
+
+   fn parse_block_stmt(&mut self) -> ast::Stmt {
+        // { body }
+        self.eat(); // eat the open brace
+        let mut body = Vec::new();
+        while self.at().r#type != TokenType::CloseBrace {
+            if !self.not_eof() {
+                eprintln!("Parser Error: Expected closing brace '}}' for block statement, got EOF.");
+                process::exit(1);
+            }
+            body.push(self.parse_stmt());
+        }
+
+        self.eat(); // eat the closing brace, we dont have to use expect because the closing brace expectation is handled in the loop
+
+        ast::Stmt::BlockStatement(ast::BlockStatement {
+            kind: ast::NodeType::BlockStatement,
+            body
+        })
+    }
+
+    fn parse_if_stmt(&mut self) -> ast::Stmt {
+        // if awer { body } or if awer stmt
+        self.eat(); // eat the if keyword
+        let test = self.parse_expr(); // the test
+        let body = Box::new(self.parse_stmt()); // can be a regular stmt or a block statement
+        let mut alternate = None;
+
+        // check for alternate condition below
+        if self.at().r#type == TokenType::Else {
+            self.eat(); // eat the else keyword
+            if self.at().r#type == TokenType::If {
+                alternate = Some(Box::new(self.parse_if_stmt())); // restart recursively with more conditions
+            } else {
+                alternate = Some(Box::new(self.parse_stmt())); // just give the non conditional statement for else
+            }
+        }
+
+        ast::Stmt::IfStatement(ast::IfStatement {
+            kind: ast::NodeType::IfStatement,
+            test,
+            alternate,
+            body,
         })
     }
 }

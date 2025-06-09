@@ -1,3 +1,15 @@
+# v0.10.0 - 06/08/2025
+
+If statements and booleans!
+
+## Added
+
+- Added if statements.
+- Added booleans.
+- Added comparison operators and binary operations.
+- Added block statements, primarily meant for use for if statements but they can also be used for function declarations later on.
+- Added proper support for scopes in the VM.
+
 # v0.9.2 - 06/05/2025
 
 Handle calculation errors in VM.

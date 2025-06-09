@@ -174,7 +174,7 @@ impl VM {
         F: Fn(i64, i64) -> bool,
     {
         let (left, right) = self.pop_two_stack();
-
+ 
         match (left, right) {
             (Value::Int(l), Value::Int(r)) => {
                 self.stack.push(Value::Int(if op(l, r) { 1 } else { 0 }));

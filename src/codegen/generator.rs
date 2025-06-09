@@ -171,6 +171,14 @@ impl Codegen {
                 }
             }
             ast::Expr::AssignmentExpr(assignment_expr) => self.generate_assignment_expr(assignment_expr),
+            ast::Expr::BooleanLiteral(literal) => {
+                self.bytecode.push(constants::PUSH_INT);
+                if literal.value {
+                    self.bytecode.extend(self.emit_u64(1));
+                } else {
+                    self.bytecode.extend(self.emit_u64(0));
+                }
+            }
         }
     }
 
@@ -182,6 +190,7 @@ impl Codegen {
                 eprintln!("Generator Error: There is a program within the program, this is not allowed!");
                 process::exit(1);
             }
+            _ => todo!(),
         }
     }
 

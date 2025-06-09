@@ -6,7 +6,11 @@ static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
     "let" => TokenType::Let,
     "const" => TokenType::Const,
     "fn" => TokenType::Fn,
-    "return" => TokenType::Return
+    "return" => TokenType::Return,
+    "true" => TokenType::True,
+    "false" => TokenType::False,
+    "if" => TokenType::If,
+    "else" => TokenType::Else,
 };
 
 pub struct Lexer {
@@ -80,6 +84,16 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
 
             ')' => {
                 tokens.push(Token { value: ch.to_string(), r#type: TokenType::CloseParen });
+                l.read();
+            }
+
+            '{' => {
+                tokens.push(Token { value: ch.to_string(), r#type: TokenType::OpenBrace });
+                l.read();
+            }
+
+            '}' => {
+                tokens.push(Token { value: ch.to_string(), r#type: TokenType::CloseBrace });
                 l.read();
             }
 
