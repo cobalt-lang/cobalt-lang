@@ -1,7 +1,10 @@
-if awer {
-    let x = 5
-} else if ower {
-    let x = 7
+const awer = 2
+const const_thing = 4
+
+let value = 0
+
+if awer == const_thing {
+    value = 1
 } else {
-    let x = 543
+    value = 42
 }

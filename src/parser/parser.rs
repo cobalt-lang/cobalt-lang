@@ -99,7 +99,7 @@ impl Parser {
     }
 
     fn parse_assignment_expr(&mut self) -> ast::Expr {
-        let left = self.parse_additive_expr();
+        let left = self.parse_equality_expr();
 
         if self.at().r#type == TokenType::Equals {
             self.eat(); // advance past the equals sign to get the value of the assignment expr
@@ -109,6 +109,42 @@ impl Parser {
                 assignee: Box::new(left),
                 value: Box::new(value)
             })
+        }
+
+        left
+    }
+
+    fn parse_equality_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_comparison_expr();
+
+        while matches!(self.at().value.as_str(), "==" | "!=") {
+            let operator = self.eat().value;
+            let right = self.parse_comparison_expr();
+
+            left = ast::Expr::Binary(ast::BinaryExpr {
+                kind: ast::NodeType::BinaryExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator
+            });
+        }
+
+        left
+    }
+
+    fn parse_comparison_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_additive_expr();
+
+        while matches!(self.at().value.as_str(), "<" | ">" | "<=" | ">=") {
+            let operator = self.eat().value;
+            let right = self.parse_additive_expr();
+
+            left = ast::Expr::Binary(ast::BinaryExpr {
+                kind: ast::NodeType::BinaryExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator
+            });
         }
 
         left
