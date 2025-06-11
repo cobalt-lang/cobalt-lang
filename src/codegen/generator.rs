@@ -106,16 +106,16 @@ impl Codegen {
 
     fn generate_assignment_expr(&mut self, assignmentexpr: &ast::AssignmentExpr) {
         // make sure the assignee is an identifier (only one currently supported)
-        let assignee = &*assignmentexpr.assignee;
-        let ident: String;
 
-        match assignee {
-            ast::Expr::Identifier(identifier) => { ident = (*identifier.symbol).to_string() },
+        let assignee = &*assignmentexpr.assignee;
+        let ident: String = match assignee {
+            ast::Expr::Identifier(identifier) => { (*identifier.symbol).to_string() },
             _ => {
                 eprintln!("Generator Error: The left hand side of the assignment expression was not an identifier.");
                 process::exit(1);
             }
-        }
+        };
+
         // make sure the variable that the assignee is referring to exists
         let var = self.get_var(&ident);
         let var_id = var.id as u64;
