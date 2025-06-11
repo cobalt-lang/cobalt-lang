@@ -112,9 +112,36 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
             }
 
             '=' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::Equals });
                 l.read();
+                if l.peek() == '=' {
+                    tokens.push(Token { value: "==".to_string(), r#type: TokenType::BinaryOperator });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: ch.to_string(), r#type: TokenType::Equals });
+                }
             }
+
+            '>' | '<'  => {
+                l.read();
+                if l.peek() == '=' {
+                    let value = ch.to_string() + "=";
+                    tokens.push(Token { value, r#type: TokenType::BinaryOperator });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: ch.to_string(), r#type: TokenType::BinaryOperator });
+                }
+            }
+
+            '!' => {
+                l.read();
+                if l.peek() == '=' {
+                    tokens.push(Token { value: "!=".to_string(), r#type: TokenType::BinaryOperator});
+                    l.read();
+                } else {
+                    tokens.push(Token { value: ch.to_string(), r#type: TokenType::Not });
+                }
+            }
+
             ':' => {
                 tokens.push(Token { value: ch.to_string(), r#type: TokenType::Colon });
                 l.read();

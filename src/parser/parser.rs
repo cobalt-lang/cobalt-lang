@@ -151,8 +151,7 @@ impl Parser {
     }
 
     fn parse_unary_expr(&mut self) -> ast::Expr {
-        // TODO: ADD ! OPERATOR WHEN IMPLEMENTING IF STATEMENTS
-        if matches!(self.at().value.as_str(), "-" | "+") {
+        if matches!(self.at().value.as_str(), "-" | "+" | "!") {
             let operator = self.eat().value;
             let value = self.parse_primary_expr();
             return ast::Expr::UnaryExpr(ast::UnaryExpr {

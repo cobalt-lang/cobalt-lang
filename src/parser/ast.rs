@@ -1,15 +1,17 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
-    Program,
-    VariableDeclaration,
-    IfStatement,
-    BlockStatement,
-    BinaryExpr,
-    Identifier,
-    NumericLiteral,
-    BooleanLiteral,
-    AssignmentExpr,
-    UnaryExpr,
+    Program, // the node that contains the AST
+    VariableDeclaration, // let x = 42, const x = 42 for immutable vars
+    IfStatement, // if true {} else if x {} else {}, it checks the condition and if evaluated to true executes the statement following it.
+    BlockStatement, // { body }, blocks have their own scope
+    BinaryExpr, // an expression which has a left and right hand side seperated by an operator that determines the operation
+    Identifier, // also a type of literal
+    NumericLiteral, // 123
+    FloatLiteral, // 123.0
+    BooleanLiteral, // true / false
+    StringLiteral, // "content here"
+    AssignmentExpr, // x = 42
+    UnaryExpr, // -42, !true
 }
 
 #[derive(Debug, Clone)]

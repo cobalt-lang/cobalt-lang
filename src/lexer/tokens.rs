@@ -15,11 +15,19 @@ pub enum TokenType {
     True,
     False,
 
+    // TYPES FOR VARIABLES (reserved because static typing is a strong feature of cobalt)
+    // All types are 64-bit, 32-bit is a thing of the past
+    TypeInt,
+    TypeFloat,
+    TypeBool,
+    TypeStr,
+
     // Operators and Symbols
     Colon, // :  
-    BinaryOperator, // + - * / %
-    ComparisonOperator, // < > == <= >= !=
+    BinaryOperator, // + - * / % < > == <= >= !=
+    ComparisonOperator, // || &&
     Equals, // =
+    Not, // ! (when found alone by itself, meant for unary expressions)
     OpenParen, // (
     CloseParen, // )
     OpenBrace, // {
