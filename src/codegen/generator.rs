@@ -89,7 +89,19 @@ impl Codegen {
                 self.bytecode.push(constants::DIV);
             }
             "%" => {
-                self.bytecode.push(constants::MOD)
+                self.bytecode.push(constants::MOD);
+            }
+            "==" => {
+                self.bytecode.push(constants::EQ);
+            }
+            "!=" => {
+                self.bytecode.push(constants::NEQ);
+            }
+            ">" => {
+                self.bytecode.push(constants::GT);
+            }
+            "<" => {
+                self.bytecode.push(constants::LT);
             }
             _ => {
                 // Handle other operators or throw an error if the operator is not supported
@@ -182,9 +194,52 @@ impl Codegen {
         }
     }
 
+    // this function needs to exist because the if statement does not know where to jump because that area is not yet generated, once it is we can patch the placeholder with the real
+    fn patch_jump(&mut self, pos: usize, target: usize) {
+        let target_bytes = target.to_le_bytes();
+        for i in 0..8 {
+            self.bytecode[pos + i] = target_bytes[i];
+        }
+    }
+
+    fn generate_if_stmt(&mut self, if_stmt: &ast::IfStatement) {
+        // generate condition
+        self.generate_expr(&if_stmt.test);
+
+        // emit the jmpiffalse opcode
+        self.bytecode.push(constants::JMP_IF_FALSE);
+        let jmp_if_false_pos = self.bytecode.len(); // address of the jump, either to be after the if statement or to jump towards the next alternate condition
+        self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+
+        // generate code for if statement body
+        self.generate_stmt(&if_stmt.body);
+
+        if let Some(alternate) = &if_stmt.alternate {
+            self.bytecode.push(constants::JMP);
+            let jmp_over_else_pos = self.bytecode.len();
+            self.bytecode.extend(self.emit_u64(0));
+
+            // patch the jmpiffalse from earlier to here (start of the alternate block)
+            let alternate_start = self.bytecode.len();
+            self.patch_jump(jmp_if_false_pos, alternate_start);
+
+            // generate the alternate's stmt
+            self.generate_stmt(alternate);
+
+            // patch jmp from earlier to after the else block
+            let after_else = self.bytecode.len();
+            self.patch_jump(jmp_over_else_pos, after_else);
+        } else {
+            // this occurs when no alternate is given, it patches jmpiffalse to after the body of the if stmt
+            let after_body = self.bytecode.len();
+            self.patch_jump(jmp_if_false_pos, after_body);
+        }
+    }
+
     fn generate_stmt(&mut self, stmt: &ast::Stmt) {
         match stmt {
             ast::Stmt::VariableDeclaration(vardecl) => self.generate_vardecl_stmt(vardecl),
+            ast::Stmt::IfStatement(if_stmt) => self.generate_if_stmt(if_stmt),
             ast::Stmt::Expr(expr) => self.generate_expr(expr),
             ast::Stmt::Program(_) => {
                 eprintln!("Generator Error: There is a program within the program, this is not allowed!");

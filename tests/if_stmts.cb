@@ -1,10 +1,10 @@
-const awer = 2
+const awer = 4
 const const_thing = 4
 
 let value = 0
 
-if awer == const_thing {
-    value = 1
-} else {
-    value = 42
-}
+if awer == const_thing value = 1
+else if awer == 5 value = 42
+else value = 7
+
+value # should be 1
