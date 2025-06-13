@@ -6,7 +6,7 @@ pub const MAGIC_NUMBER_U8: [u8; 4] = MAGIC_NUMBER.to_le_bytes();
 // OPCODES - STACK MANIPULATION
 pub const PUSH_INT: u8 = 0x01; // PUSH_INT 4
 pub const PUSH_STR: u8 = 0x02; // PUSH_STR "hello world!"
-pub const PUSH_BOOL: u8 = 0x018; // PUSH_BOOL <0|1>, 0 for false and 1 for true, although any number other than 0 will evaluate to true
+pub const PUSH_BOOL: u8 = 0x18; // PUSH_BOOL <0|1>, 0 for false and 1 for true, although any number other than 0 will evaluate to true
 pub const POP: u8 = 0x03; // POP
 
 // ARITHMETIC

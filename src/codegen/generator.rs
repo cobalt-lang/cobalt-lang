@@ -184,11 +184,11 @@ impl Codegen {
             }
             ast::Expr::AssignmentExpr(assignment_expr) => self.generate_assignment_expr(assignment_expr),
             ast::Expr::BooleanLiteral(literal) => {
-                self.bytecode.push(constants::PUSH_INT);
+                self.bytecode.push(constants::PUSH_BOOL);
                 if literal.value {
-                    self.bytecode.extend(self.emit_u64(1));
+                    self.bytecode.push(1);
                 } else {
-                    self.bytecode.extend(self.emit_u64(0));
+                    self.bytecode.push(0);
                 }
             }
         }
@@ -197,9 +197,7 @@ impl Codegen {
     // this function needs to exist because the if statement does not know where to jump because that area is not yet generated, once it is we can patch the placeholder with the real
     fn patch_jump(&mut self, pos: usize, target: usize) {
         let target_bytes = target.to_le_bytes();
-        for i in 0..8 {
-            self.bytecode[pos + i] = target_bytes[i];
-        }
+        self.bytecode[pos..(pos + 8)].copy_from_slice(&target_bytes);
     }
 
     fn generate_if_stmt(&mut self, if_stmt: &ast::IfStatement) {
@@ -236,10 +234,19 @@ impl Codegen {
         }
     }
 
+    fn generate_block_stmt(&mut self, block_stmt: &ast::BlockStatement) {
+        // generate code for each statement in the block
+        for stmt in &block_stmt.body {
+            self.generate_stmt(stmt);
+        }
+    }
+
     fn generate_stmt(&mut self, stmt: &ast::Stmt) {
+        // TODO: IMPLEMENT SCOPES TO BLOCK STATEMENT IN THE FUTURE (MUST BE DONE FOR v0.10.0)
         match stmt {
             ast::Stmt::VariableDeclaration(vardecl) => self.generate_vardecl_stmt(vardecl),
             ast::Stmt::IfStatement(if_stmt) => self.generate_if_stmt(if_stmt),
+            ast::Stmt::BlockStatement(block_stmt) => self.generate_block_stmt(block_stmt),
             ast::Stmt::Expr(expr) => self.generate_expr(expr),
             ast::Stmt::Program(_) => {
                 eprintln!("Generator Error: There is a program within the program, this is not allowed!");

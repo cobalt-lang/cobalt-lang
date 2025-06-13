@@ -44,3 +44,4 @@ The CLI tools are available on the AUR, maintained officially by us. You can ins
 - Positional errors (the error says what position in the file it's referring to)
 - Standard library.
 - Bytecode bytes to words translator (just a tool in the future, could maybe be written in Cobalt itself!)
+- Catch more errors at code generation stage.

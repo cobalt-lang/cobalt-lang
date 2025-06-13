@@ -8,6 +8,7 @@ use super::constants;
 pub enum Opcode {
     PushInt,
     PushStr,
+    PushBool,
     Pop,
     Add,
     Sub,
@@ -36,6 +37,7 @@ impl Opcode {
         match byte {
             0x01 => Some(Opcode::PushInt),
             0x02 => Some(Opcode::PushStr),
+            0x18 => Some(Opcode::PushBool),
             0x03 => Some(Opcode::Pop),
             0x04 => Some(Opcode::Add),
             0x05 => Some(Opcode::Sub),
@@ -65,7 +67,16 @@ impl Opcode {
 #[derive(Clone, Debug, PartialEq)]
 enum Value {
     Int(i64),
+    Bool(bool),
     Str(String)
+}
+
+// TODO: add Ge and Le as options in the future
+enum CmpOp {
+    Eq,
+    Neq,
+    Lt,
+    Gt
 }
 
 pub struct VM {
@@ -143,6 +154,16 @@ impl VM {
 
         (left, right)
     }
+
+    // gets type name from a Value
+    fn get_type_name(&self, val: &Value) -> &str {
+        match val {
+            Value::Int(_) => "int",
+            Value::Bool(_) => "bool",
+            Value::Str(_) => "str",
+        }
+    }
+
     // once strings come this function will not apply for ADD opcodes
     fn binary_int_op<F>(&mut self, op: F, op_name: &str)
     where
@@ -163,27 +184,35 @@ impl VM {
                 self.stack.push(Value::Int(op(l, r)));
             }
             _ => {
-                eprintln!("VM Error: Mismatched types on {} operation!", op_name);
+                eprintln!("VM Error: Mismatched or unsupported types on {} operation!", op_name);
                 process::exit(1);
             }
         }
     }
 
-    fn binary_cmp_op<F>(&mut self, op: F, op_name: &str)
-    where
-        F: Fn(i64, i64) -> bool,
-    {
+
+    fn binary_cmp_op(&mut self, op: CmpOp, op_name: &str) {
         let (left, right) = self.pop_two_stack();
  
-        match (left, right) {
-            (Value::Int(l), Value::Int(r)) => {
-                self.stack.push(Value::Int(if op(l, r) { 1 } else { 0 }));
-            }
+        let result = match (&left, &right, op) {
+            (Value::Int(l), Value::Int(r), op) => match op {
+                CmpOp::Eq => Value::Bool(l == r),
+                CmpOp::Neq => Value::Bool(l != r),
+                CmpOp::Lt => Value::Bool(l < r),
+                CmpOp::Gt => Value::Bool(l > r),
+            },
+            (Value::Bool(l), Value::Bool(r), CmpOp::Eq) => Value::Bool(l == r),
+            (Value::Bool(l), Value::Bool(r), CmpOp::Neq) => Value::Bool(l != r),
             _ => {
-                eprintln!("VM Error: Mismatched types for {} comparison!", op_name);
+                // TODO: change this error in the future, it flows kind of weird
+                // this error needs to be more specific about what kind of operation was done and what type that is not supported on
+                // example: VM Error: ">" is not a supported operation for type bool.
+                eprintln!("VM Error: Mismatched types or unsupported operation for {} comparison of type '{}' and '{}'.", op_name, self.get_type_name(&left), self.get_type_name(&right));
                 process::exit(1);
             }
-        }
+        };
+
+        self.stack.push(result);
     }
 
     pub fn interpret(&mut self) {
@@ -198,6 +227,15 @@ impl VM {
                 Some(Opcode::PushInt) => {
                     let value = self.fetch_u64();
                     self.stack.push(Value::Int(value.try_into().unwrap()));
+                }
+                Some(Opcode::PushBool) => {
+                    let value = self.fetch_byte();
+
+                    if value == 0 {
+                        self.stack.push(Value::Bool(false))
+                    } else {
+                        self.stack.push(Value::Bool(true))
+                    }
                 }
                 Some(Opcode::Add) => {
                     let (left, right) = self.pop_two_stack();
@@ -232,25 +270,39 @@ impl VM {
                         }
                     }
                 }
-                Some(Opcode::Eq) => self.binary_cmp_op(|a, b| a == b, "EQ"),
-                Some(Opcode::Neq) => self.binary_cmp_op(|a, b| a != b, "NEQ"),
-                Some(Opcode::Lt) => self.binary_cmp_op(|a, b| a < b, "LT"),
-                Some(Opcode::Gt) => self.binary_cmp_op(|a, b| a > b, "GT"),
+                Some(Opcode::Eq) => self.binary_cmp_op(CmpOp::Eq, "=="),
+                Some(Opcode::Neq) => self.binary_cmp_op(CmpOp::Neq, "!="),
+                Some(Opcode::Lt) => self.binary_cmp_op(CmpOp::Lt, "<"),
+                Some(Opcode::Gt) => self.binary_cmp_op(CmpOp::Gt, ">"),
                 Some(Opcode::Jmp) => {
                     self.ip = self.fetch_u64().try_into().expect("VM Error: Attempted to do JMP operation, but converting the address into a usize failed!");
                 }
                 Some(Opcode::JmpIfTrue) => {
                     let address = self.fetch_u64();
                     let condition = self.stack.pop().expect("VM Error: Stack underflow!");
-                    if condition != Value::Int(0) {
-                        self.ip = address.try_into().expect("VM Error: Attempted to do JMP_IF_TRUE operation, but converting the address into a usize failed!");
+                    match condition {
+                        Value::Bool(true) => {
+                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                        }
+                        Value::Bool(false) => { /* do nothing */ }
+                        _ => {
+                            eprintln!("VM Error: JmpIfTrue expected a boolean condition, but got type '{}'.", self.get_type_name(&condition));
+                            process::exit(1);
+                        }
                     }
                 }
                 Some(Opcode::JmpIfFalse) => {
                     let address = self.fetch_u64();
                     let condition = self.stack.pop().expect("VM Error: Stack underflow!");
-                    if condition == Value::Int(0) {
-                        self.ip = address.try_into().expect("VM Error: Attempted to do JMP_IF_FALSE operation, but converting the address to a usize failed!");
+                    match condition {
+                        Value::Bool(false) => {
+                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                        }
+                        Value::Bool(true) => { /* do nothing */ }
+                        _ => {
+                            eprintln!("VM Error: JmpIfFalse expected a boolean condition, but got type '{}'.", self.get_type_name(&condition));
+                            process::exit(1);
+                        }
                     }
                 }
                 Some(Opcode::Call) => {
