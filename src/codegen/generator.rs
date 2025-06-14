@@ -163,7 +163,6 @@ impl Codegen {
             }
             ast::Expr::UnaryExpr(unary_expr) => {
                 // push bytecode depending on operator
-                // TODO: Add ! support when there is if statements
 
                 match unary_expr.operator.as_str() {
                     "+" => {
@@ -175,6 +174,12 @@ impl Codegen {
                         self.generate_expr(&unary_expr.value);
                         // add neg opcode to make the result a negative value
                         self.bytecode.push(constants::NEG);
+                    }
+                    "!" => {
+                        // generate the expression
+                        self.generate_expr(&unary_expr.value);
+                        // add not opcode
+                        self.bytecode.push(constants::NOT)
                     }
                     _ => {
                         eprintln!("Generator Error: Unexpected operator for unary expression.\nAllowed operators are: +, -\nOperator used was: {}", unary_expr.operator);

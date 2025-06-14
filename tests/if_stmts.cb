@@ -1,11 +1,11 @@
 let awer = 4
 const const_thing = 4
-const true_thing = true
+const false_thing = false
 
 let value = 0
 let value2 = 0
 
-if true_thing != true { 
+if !false_thing { 
     value = 1
     value2 = 3
 } else if awer == 5 {
@@ -16,5 +16,5 @@ if true_thing != true {
     value2 = 8
 }
 
-value # should be 7
-value2 # should be 8
+value # should be 1
+value2 # should be 3

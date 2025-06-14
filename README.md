@@ -38,10 +38,12 @@ The CLI tools are available on the AUR, maintained officially by us. You can ins
 - Add strings. (goal for v0.11.0)
 - Add static types for variables (goal for v0.12.0)
 - Add floating point values (goal for v0.12.0)
-- Add functions. (goal for v0.13.0)
+- Add loops. (goal for v0.13.0)
+- Add functions. (goal for v0.14.0)
 - Try to do as little cloning as possible VM and parser do inefficient cloning.
 - More descriptive and consistent errors (always room for that!)
 - Positional errors (the error says what position in the file it's referring to)
 - Standard library.
 - Bytecode bytes to words translator (just a tool in the future, could maybe be written in Cobalt itself!)
 - Catch more errors at code generation stage.
+- Include basic optimization methods including but not limited to: Constant folding, constant propagation, 

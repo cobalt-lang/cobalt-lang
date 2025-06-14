@@ -1,4 +1,4 @@
-# v0.10.0 - 06/08/2025
+# v0.10.0 - 06/18/2025
 
 If statements and booleans!
 
@@ -9,6 +9,14 @@ If statements and booleans!
 - Added comparison operators and binary operations.
 - Added block statements, primarily meant for use for if statements but they can also be used for function declarations later on.
 - Added proper support for scopes in the VM.
+- Added logical expressions. (1 == 5 || 2 == 2)
+- Added more possible operators to assignment expressions. (+=, -=)
+- Added a new unary operator. (!)
+
+## Changed
+
+- Added several new tasks to TODO in README.md.
+- Refactor certain functions in the VM.
 
 # v0.9.2 - 06/05/2025
 

@@ -16,6 +16,7 @@ pub enum Opcode {
     Div,
     Mod,
     Neg,
+    Not,
     Eq,
     Neq,
     Lt,
@@ -45,6 +46,7 @@ impl Opcode {
             0x07 => Some(Opcode::Div),
             0x15 => Some(Opcode::Mod),
             0x17 => Some(Opcode::Neg),
+            0x19 => Some(Opcode::Not),
             0x08 => Some(Opcode::Eq),
             0x09 => Some(Opcode::Neq),
             0x0a => Some(Opcode::Lt),
@@ -164,7 +166,7 @@ impl VM {
         }
     }
 
-    // once strings come this function will not apply for ADD opcodes
+    // once strings come this functi0on will not apply for ADD opcodes
     fn binary_int_op<F>(&mut self, op: F, op_name: &str)
     where
         F: Fn(i64, i64) -> i64
@@ -266,6 +268,23 @@ impl VM {
                         }
                         _ => {
                             eprintln!("VM Error: Unsupported type for NEG operation, only numbers can be turned into negative values.");
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::Not) => {
+                    let value = self.stack.pop().expect("VM Error: Stack underflow!");
+
+                    match value {
+                        Value::Bool(val) => {
+                            if val {
+                                self.stack.push(Value::Bool(false));
+                            } else {
+                                self.stack.push(Value::Bool(true));
+                            }
+                        }
+                        _ => {
+                            eprintln!("VM Error: Cannot apply NOT operation on a value that is not a boolean!");
                             process::exit(1);
                         }
                     }
