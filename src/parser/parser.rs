@@ -100,13 +100,14 @@ impl Parser {
 
     fn parse_assignment_expr(&mut self) -> ast::Expr {
         let left = self.parse_equality_expr();
-
-        if self.at().r#type == TokenType::Equals {
-            self.eat(); // advance past the equals sign to get the value of the assignment expr
+        // TODO: add more assignment operators. *=, /=, %=
+        if matches!(self.at().r#type, TokenType::Equals | TokenType::PlusEquals | TokenType::MinusEquals) {
+            let operator = self.eat().value; // advance past the assignment operator to get the value of the assignment expr
             let value = self.parse_assignment_expr();
             return ast::Expr::AssignmentExpr(ast::AssignmentExpr {
                 kind: ast::NodeType::AssignmentExpr,
                 assignee: Box::new(left),
+                operator,
                 value: Box::new(value)
             })
         }

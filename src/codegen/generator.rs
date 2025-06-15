@@ -76,20 +76,24 @@ impl Codegen {
 
     fn generate_operator(&mut self, operator: &str) {
         match operator {
-            "+" => {
+            "+" | "+=" => {
                 self.bytecode.push(constants::ADD);
             }
-            "-" => {
+            "-" | "-=" => {
                 self.bytecode.push(constants::SUB);
             }
-            "*" => {
+            "*" | "*=" => {
                 self.bytecode.push(constants::MUL);
             }
-            "/" => {
+            "/" | "/=" => {
                 self.bytecode.push(constants::DIV);
             }
-            "%" => {
+            "%" | "%=" => {
                 self.bytecode.push(constants::MOD);
+            }
+            "=" => {
+                // do nothing
+                return;
             }
             "==" => {
                 self.bytecode.push(constants::EQ);
@@ -139,7 +143,13 @@ impl Codegen {
             process::exit(1);
         }
 
+        // if the assignment operator is not =, also push the value of the assignee before the assignment
+        if assignmentexpr.operator != "=" {
+            self.generate_expr(assignee);
+        }
+
         self.generate_expr(&assignmentexpr.value);
+        self.generate_operator(&assignmentexpr.operator);
         self.bytecode.push(constants::STORE);
         self.bytecode.extend(self.emit_u64(var_id));
     }

@@ -1,7 +1,12 @@
 # this file is completely random stuff, depends on what someone is trying to test
 
 let x = 42 + 1
-const x = 43
 
-x
-x
+x += 3
+x -= 1
+
+x # should be 45
+
+x = 2
+
+x # should be 2

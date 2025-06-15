@@ -94,6 +94,7 @@ pub struct BooleanLiteral {
 pub struct AssignmentExpr {
     pub kind: NodeType,
     pub assignee: Box<Expr>,
+    pub operator: String, // =, +=, -=, /=, *=, %=
     pub value: Box<Expr>
 }
 
