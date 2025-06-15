@@ -24,8 +24,21 @@ pub enum TokenType {
 
     // Operators and Symbols
     Colon, // :  
-    BinaryOperator, // + - * / % < > == <= >= !=
-    ComparisonOperator, // || &&
+    Plus, // +
+    Minus, // -
+    Star, // *
+    Slash, // /
+    Percent, // %
+    LessThan, // <
+    GreaterThan, // >
+    EqualsEquals, // ==
+    NotEqual, // !=
+    LessThanEqual, // <=
+    GreaterThanEqual, // >=
+    PlusEquals, // +=
+    MinusEquals, // -=
+    Or, // ||
+    And, // &&
     Equals, // =
     Not, // ! (when found alone by itself, meant for unary expressions)
     OpenParen, // (

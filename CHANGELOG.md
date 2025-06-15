@@ -17,6 +17,7 @@ If statements and booleans!
 
 - Added several new tasks to TODO in README.md.
 - Refactor certain functions in the VM.
+- Operators at the lexer level are now handled individually instead of under the "BinaryOperator" token type. This should make the parser faster, and make errors clearer.
 
 # v0.9.2 - 06/05/2025
 

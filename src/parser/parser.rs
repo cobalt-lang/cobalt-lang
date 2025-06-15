@@ -117,7 +117,7 @@ impl Parser {
     fn parse_equality_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_comparison_expr();
 
-        while matches!(self.at().value.as_str(), "==" | "!=") {
+        while matches!(self.at().r#type, TokenType::EqualsEquals | TokenType::NotEqual) {
             let operator = self.eat().value;
             let right = self.parse_comparison_expr();
 
@@ -135,7 +135,7 @@ impl Parser {
     fn parse_comparison_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_additive_expr();
 
-        while matches!(self.at().value.as_str(), "<" | ">" | "<=" | ">=") {
+        while matches!(self.at().r#type, TokenType::LessThan | TokenType::GreaterThan | TokenType::LessThanEqual | TokenType::GreaterThanEqual) {
             let operator = self.eat().value;
             let right = self.parse_additive_expr();
 
@@ -153,7 +153,7 @@ impl Parser {
     fn parse_additive_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_multiplicative_expr();
 
-        while matches!(self.at().value.as_str(), "+" | "-") {
+        while matches!(self.at().r#type, TokenType::Plus | TokenType::Minus) {
             let operator = self.eat().value;
             let right = self.parse_multiplicative_expr();
             
@@ -171,7 +171,7 @@ impl Parser {
     fn parse_multiplicative_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_unary_expr();
 
-        while matches!(self.at().value.as_str(), "*" | "/" | "%") {
+        while matches!(self.at().r#type, TokenType::Star | TokenType::Slash | TokenType::Percent) {
             let operator = self.eat().value;
             let right = self.parse_primary_expr();
 
@@ -187,7 +187,7 @@ impl Parser {
     }
 
     fn parse_unary_expr(&mut self) -> ast::Expr {
-        if matches!(self.at().value.as_str(), "-" | "+" | "!") {
+        if matches!(self.at().r#type, TokenType::Minus | TokenType::Plus | TokenType::Not) {
             let operator = self.eat().value;
             let value = self.parse_primary_expr();
             return ast::Expr::UnaryExpr(ast::UnaryExpr {

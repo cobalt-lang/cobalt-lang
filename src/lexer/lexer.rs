@@ -78,27 +78,81 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
 
         match ch {
             '(' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::OpenParen });
+                tokens.push(Token { value: "(".to_string(), r#type: TokenType::OpenParen });
                 l.read();
             }
 
             ')' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::CloseParen });
+                tokens.push(Token { value: ")".to_string(), r#type: TokenType::CloseParen });
                 l.read();
             }
 
             '{' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::OpenBrace });
+                tokens.push(Token { value: "{".to_string(), r#type: TokenType::OpenBrace });
                 l.read();
             }
 
             '}' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::CloseBrace });
+                tokens.push(Token { value: "}".to_string(), r#type: TokenType::CloseBrace });
                 l.read();
             }
 
-            '+' | '-' | '/' | '*' | '%' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::BinaryOperator });
+            '>'  => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = ">=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::GreaterThanEqual });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: ">".to_string(), r#type: TokenType::GreaterThan });
+                }
+            }
+
+            '<' => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = "<=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::LessThanEqual });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "<".to_string(), r#type: TokenType::LessThan });
+                }
+            }
+
+            '+' => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = "+=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::PlusEquals });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "+".to_string(), r#type: TokenType::Plus });
+                }
+            }
+
+            '-' => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = "-=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::MinusEquals });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "-".to_string(), r#type: TokenType::Minus });
+                }
+            }
+
+            '/' => {
+                tokens.push(Token { value: "/".to_string(), r#type: TokenType::Slash });
+                l.read();
+            }
+
+            '*' => {
+                tokens.push(Token { value: "*".to_string(), r#type: TokenType::Star });
+                l.read();
+            }
+
+            '%' => {
+                tokens.push(Token { value: "%".to_string(), r#type: TokenType::Percent });
                 l.read();
             }
 
@@ -114,31 +168,20 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
             '=' => {
                 l.read();
                 if l.peek() == '=' {
-                    tokens.push(Token { value: "==".to_string(), r#type: TokenType::BinaryOperator });
+                    tokens.push(Token { value: "==".to_string(), r#type: TokenType::EqualsEquals });
                     l.read();
                 } else {
-                    tokens.push(Token { value: ch.to_string(), r#type: TokenType::Equals });
-                }
-            }
-
-            '>' | '<'  => {
-                l.read();
-                if l.peek() == '=' {
-                    let value = ch.to_string() + "=";
-                    tokens.push(Token { value, r#type: TokenType::BinaryOperator });
-                    l.read();
-                } else {
-                    tokens.push(Token { value: ch.to_string(), r#type: TokenType::BinaryOperator });
+                    tokens.push(Token { value: "=".to_string(), r#type: TokenType::Equals });
                 }
             }
 
             '!' => {
                 l.read();
                 if l.peek() == '=' {
-                    tokens.push(Token { value: "!=".to_string(), r#type: TokenType::BinaryOperator});
+                    tokens.push(Token { value: "!=".to_string(), r#type: TokenType::NotEqual });
                     l.read();
                 } else {
-                    tokens.push(Token { value: ch.to_string(), r#type: TokenType::Not });
+                    tokens.push(Token { value: "!".to_string(), r#type: TokenType::Not });
                 }
             }
 
