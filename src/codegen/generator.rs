@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 use std::process;
 use crate::interpreter::constants;
-use crate::parser::ast;
+use crate::parser::ast::{self, LogicalExpr};
 
 pub struct Codegen {
     bytecode: Vec<u8>,
@@ -120,6 +120,13 @@ impl Codegen {
         self.generate_operator(&binaryexpr.operator);
     }
 
+    fn generate_logical_expr(&mut self, logical_expr: &ast::LogicalExpr) {
+        panic!("Generator Error: Logical expressions not implemented yet! Please don't use them.");
+        // self.generate_expr(&logical_expr.left);
+        // self.generate_expr(&logical_expr.right);
+        // self.generate_operator(&logical_expr.operator);
+    }
+
     fn generate_assignment_expr(&mut self, assignmentexpr: &ast::AssignmentExpr) {
         // make sure the assignee is an identifier (only one currently supported)
 
@@ -197,6 +204,7 @@ impl Codegen {
                     }
                 }
             }
+            ast::Expr::LogicalExpr(logical_expr) => self.generate_logical_expr(logical_expr),
             ast::Expr::AssignmentExpr(assignment_expr) => self.generate_assignment_expr(assignment_expr),
             ast::Expr::BooleanLiteral(literal) => {
                 self.bytecode.push(constants::PUSH_BOOL);

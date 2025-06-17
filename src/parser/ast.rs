@@ -1,17 +1,18 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
-    Program, // the node that contains the AST
+    Program,             // the node that contains the AST
     VariableDeclaration, // let x = 42, const x = 42 for immutable vars
-    IfStatement, // if true {} else if x {} else {}, it checks the condition and if evaluated to true executes the statement following it.
-    BlockStatement, // { body }, blocks have their own scope
-    BinaryExpr, // an expression which has a left and right hand side seperated by an operator that determines the operation
-    Identifier, // also a type of literal
-    NumericLiteral, // 123
-    FloatLiteral, // 123.0
-    BooleanLiteral, // true / false
-    StringLiteral, // "content here"
-    AssignmentExpr, // x = 42
-    UnaryExpr, // -42, !true
+    IfStatement,         // if true {} else if x {} else {}, it checks the condition and if evaluated to true executes the statement following it.
+    BlockStatement,      // { body }, blocks have their own scope
+    BinaryExpr,          // an expression which has a left and right hand side seperated by an operator that determines the operation
+    LogicalExpr,         // an expression which has a left and right hand side seperated by an operator, either and (&&) or or (||).
+    Identifier,          // a name used to identify variables and functions declared by the user
+    NumericLiteral,      // 123
+    FloatLiteral,        // 123.0 (NOT IMPLEMENTED)
+    BooleanLiteral,      // true / false
+    StringLiteral,       // "content here" (NOT IMPLEMENTED)
+    AssignmentExpr,      // x = 42
+    UnaryExpr,           // -42, !true
 }
 
 #[derive(Debug, Clone)]
@@ -26,6 +27,7 @@ pub enum Stmt {
 #[derive(Debug, Clone)]
 pub enum Expr {
     Binary(BinaryExpr),
+    LogicalExpr(LogicalExpr),
     Identifier(Identifier),
     NumericLiteral(NumericLiteral),
     BooleanLiteral(BooleanLiteral),
@@ -70,6 +72,14 @@ pub struct BinaryExpr {
     pub left: Box<Expr>,
     pub right: Box<Expr>,
     pub operator: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct LogicalExpr {
+    pub kind: NodeType,
+    pub left: Box<Expr>,
+    pub right: Box<Expr>,
+    pub operator: String
 }
 
 #[derive(Debug, Clone)]

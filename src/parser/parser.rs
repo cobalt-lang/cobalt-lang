@@ -12,10 +12,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Parser {
-        Self {
-            tokens,
-            pos: 0
-        }
+        Self { tokens, pos: 0 }
     }
 
     fn not_eof(&self) -> bool {
@@ -72,25 +69,11 @@ impl Parser {
         let tk = self.at().r#type;
 
         match tk {
-            TokenType::Let => {
-                self.parse_variable_stmt(false)
-            }
-
-            TokenType::Const => {
-                self.parse_variable_stmt(true)
-            }
-
-            TokenType::If => {
-                self.parse_if_stmt()
-            }
-
-            TokenType::OpenBrace => {
-                self.parse_block_stmt()
-            }
-
-            _ => {
-                ast::Stmt::Expr(self.parse_expr())
-            }
+            TokenType::Let => self.parse_variable_stmt(false),
+            TokenType::Const => self.parse_variable_stmt(true),
+            TokenType::If => self.parse_if_stmt(),
+            TokenType::OpenBrace => self.parse_block_stmt(),
+            _ => ast::Stmt::Expr(self.parse_expr())
         }
     }
 
@@ -109,7 +92,43 @@ impl Parser {
                 assignee: Box::new(left),
                 operator,
                 value: Box::new(value)
-            })
+            });
+        }
+
+        left
+    }
+
+    fn parse_logical_or_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_logical_and_expr();
+
+        while self.at().r#type == TokenType::Or {
+            let operator = self.eat().value;
+            let right = self.parse_logical_and_expr();
+
+            left = ast::Expr::LogicalExpr(ast::LogicalExpr {
+                kind: ast::NodeType::LogicalExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator,
+            });
+        }
+
+        left
+    }
+
+    fn parse_logical_and_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_equality_expr();
+
+        while self.at().r#type == TokenType::And {
+            let operator = self.eat().value;
+            let right = self.parse_equality_expr();
+
+            left = ast::Expr::LogicalExpr(ast::LogicalExpr {
+                kind: ast::NodeType::LogicalExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator
+            });
         }
 
         left
@@ -157,7 +176,7 @@ impl Parser {
         while matches!(self.at().r#type, TokenType::Plus | TokenType::Minus) {
             let operator = self.eat().value;
             let right = self.parse_multiplicative_expr();
-            
+
             left = ast::Expr::Binary(ast::BinaryExpr {
                 kind: ast::NodeType::BinaryExpr,
                 left: Box::new(left),
@@ -195,7 +214,7 @@ impl Parser {
                 kind: ast::NodeType::UnaryExpr,
                 operator,
                 value: Box::new(value)
-            })
+            });
         }
 
         self.parse_primary_expr()
@@ -205,13 +224,12 @@ impl Parser {
         let tk = self.at().r#type;
 
         match tk {
-            TokenType::Identifier => {
-                ast::Expr::Identifier(ast::Identifier { kind: ast::NodeType::Identifier, symbol: self.eat().value })
-            }
+            TokenType::Identifier => ast::Expr::Identifier(ast::Identifier { kind: ast::NodeType::Identifier, symbol: self.eat().value }),
 
-            TokenType::Number => {
-                ast::Expr::NumericLiteral(ast::NumericLiteral { kind: ast::NodeType::NumericLiteral, value: self.eat().value.parse::<i64>().expect("Parser Error: Failed to parse numeric literal.") })
-            }
+            TokenType::Number => ast::Expr::NumericLiteral(ast::NumericLiteral {
+                kind: ast::NodeType::NumericLiteral,
+                value: self.eat().value.parse::<i64>().expect("Parser Error: Failed to parse numeric literal.")
+            }),
 
             TokenType::True => {
                 self.eat(); // eat the true token
@@ -250,7 +268,7 @@ impl Parser {
         })
     }
 
-   fn parse_block_stmt(&mut self) -> ast::Stmt {
+    fn parse_block_stmt(&mut self) -> ast::Stmt {
         // { body }
         self.eat(); // eat the open brace
         let mut body = Vec::new();
@@ -295,4 +313,3 @@ impl Parser {
         })
     }
 }
-
