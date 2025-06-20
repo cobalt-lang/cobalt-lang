@@ -1,5 +1,3 @@
-// have three vecs, vec 1 is the stack, vec 2 is the global vars, vec 3 is the local vars
-
 use std::{collections::HashMap, process};
 
 use super::constants;
@@ -166,7 +164,7 @@ impl VM {
         }
     }
 
-    // once strings come this functi0on will not apply for ADD opcodes
+    // once strings come, this function will not apply for ADD opcodes
     fn binary_int_op<F>(&mut self, op: F, op_name: &str)
     where
         F: Fn(i64, i64) -> i64
@@ -361,7 +359,7 @@ impl VM {
                     process::exit(0);
                 }
                 None => {
-                    eprintln!("VM Error: Expected opcode, received: {:x}", opcode);
+                    eprintln!("VM Error: Expected opcode, received: {:x}, at IP: {}", opcode, self.ip);
                     process::exit(1);
                 }
                 _ => {

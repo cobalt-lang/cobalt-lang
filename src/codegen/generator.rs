@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 use std::process;
 use crate::interpreter::constants;
-use crate::parser::ast::{self, LogicalExpr};
+use crate::parser::ast;
 
 pub struct Codegen {
     bytecode: Vec<u8>,
@@ -91,10 +91,7 @@ impl Codegen {
             "%" | "%=" => {
                 self.bytecode.push(constants::MOD);
             }
-            "=" => {
-                // do nothing
-                return;
-            }
+            "=" => { /* do nothing */ }
             "==" => {
                 self.bytecode.push(constants::EQ);
             }
@@ -121,10 +118,77 @@ impl Codegen {
     }
 
     fn generate_logical_expr(&mut self, logical_expr: &ast::LogicalExpr) {
-        panic!("Generator Error: Logical expressions not implemented yet! Please don't use them.");
-        // self.generate_expr(&logical_expr.left);
-        // self.generate_expr(&logical_expr.right);
-        // self.generate_operator(&logical_expr.operator);
+        // generate the left side, will either push true or false to the stack once evaluated
+        self.generate_expr(&logical_expr.left);
+        
+        match logical_expr.operator.as_str() {
+            "||" => {
+                // if the left side is true, skip evaluating the right and push true to the stack
+                self.bytecode.push(constants::JMP_IF_TRUE);
+                let left_pos = self.bytecode.len();
+                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+                
+                // generate the right side
+                self.generate_expr(&logical_expr.right);
+                // if the right side is false, skip the part that pushes true to the stack and push false instead
+                self.bytecode.push(constants::JMP_IF_FALSE);
+                let right_pos = self.bytecode.len();
+                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+                
+                // true part
+                let true_pos = self.bytecode.len();
+                self.patch_jump(left_pos, true_pos);
+                self.bytecode.push(constants::PUSH_BOOL);
+                self.bytecode.push(1);
+                // jump over false part
+                self.bytecode.push(constants::JMP);
+                let jmp_over_false_pos = self.bytecode.len();
+                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+                
+                // false part
+                let false_pos = self.bytecode.len();
+                self.patch_jump(right_pos, false_pos);
+                self.bytecode.push(constants::PUSH_BOOL);
+                self.bytecode.push(0);
+                let after_false_pos = self.bytecode.len();
+                self.patch_jump(jmp_over_false_pos, after_false_pos);
+            }
+            "&&" => {
+                // if the left side is false, skip evaluating the right and push false to the stack
+                self.bytecode.push(constants::JMP_IF_FALSE);
+                let left_pos = self.bytecode.len();
+                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+
+                // generate the right side
+                self.generate_expr(&logical_expr.right);
+                // if the right side is true, skip the part that pushes false to the stack and push true instead
+                self.bytecode.push(constants::JMP_IF_TRUE);
+                let right_pos = self.bytecode.len();
+                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+
+                // false part
+                let false_pos = self.bytecode.len();
+                self.patch_jump(left_pos, false_pos);
+                self.bytecode.push(constants::PUSH_BOOL);
+                self.bytecode.push(0);
+                // jump over true part
+                self.bytecode.push(constants::JMP);
+                let jmp_over_true_pos = self.bytecode.len();
+                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+                
+                // true part
+                let true_pos = self.bytecode.len();
+                self.patch_jump(right_pos, true_pos);
+                self.bytecode.push(constants::PUSH_BOOL);
+                self.bytecode.push(1);
+                let after_true_pos = self.bytecode.len();
+                self.patch_jump(jmp_over_true_pos, after_true_pos);
+            }
+            _ => {
+                eprintln!("Generator Error: Invalid logical operator: {}", logical_expr.operator);
+                process::exit(1);
+            }
+        }
     }
 
     fn generate_assignment_expr(&mut self, assignmentexpr: &ast::AssignmentExpr) {
@@ -165,7 +229,7 @@ impl Codegen {
         match expr {
             ast::Expr::Binary(binary_expr) => self.generate_binary_expr(binary_expr),
             ast::Expr::Identifier(identifier) => {
-                // check if variable exists + get its id if it does
+                // check if a variable exists and get its id if it does
                 let val = self.get_var(&identifier.symbol);
                 let val_u64: u64 = val.id as u64;
                 
@@ -179,11 +243,11 @@ impl Codegen {
                 self.bytecode.extend(self.emit_u64(val_u64));
             }
             ast::Expr::UnaryExpr(unary_expr) => {
-                // push bytecode depending on operator
+                // push bytecode depending on the operator
 
                 match unary_expr.operator.as_str() {
                     "+" => {
-                        // just generate the expression normally
+                        // generate the expression normally
                         self.generate_expr(&unary_expr.value);
                     }
                     "-" => {

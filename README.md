@@ -36,6 +36,7 @@ The CLI tools are available on the AUR, maintained officially by us. You can ins
 # Todo
 - Add if statements and loops (goal for v0.10.0)
 - Add strings. (goal for v0.11.0)
+- Make VM print the address of the byte that causes an error. (goal for v0.11.0)
 - Add static types for variables (goal for v0.12.0)
 - Add floating point values (goal for v0.12.0)
 - Add loops. (goal for v0.13.0)

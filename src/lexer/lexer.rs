@@ -1,4 +1,5 @@
 use phf::phf_map;
+use std::process;
 
 use super::tokens::{Token, TokenType};
 
@@ -154,6 +155,30 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
             '%' => {
                 tokens.push(Token { value: "%".to_string(), r#type: TokenType::Percent });
                 l.read();
+            }
+
+            '|' => {
+                l.read();
+                if l.peek() == '|' {
+                    let value: String = "||".to_string();
+                    tokens.push(Token { value, r#type: TokenType::Or });
+                    l.read();
+                } else {
+                    eprintln!("Lexer Error: Expected a double '||' symbol, but only received a single '|' !");
+                    process::exit(1);
+                }
+            }
+
+            '&' => {
+                l.read();
+                if l.peek() == '&' {
+                    let value: String = "&&".to_string();
+                    tokens.push(Token { value, r#type: TokenType::And });
+                    l.read();
+                } else {
+                    eprintln!("Lexer Error: Expected a double '&&' symbol, but only received a single '&' !");
+                    process::exit(1);
+                }
             }
 
             '#' => {

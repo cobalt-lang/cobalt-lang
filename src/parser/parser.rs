@@ -82,7 +82,7 @@ impl Parser {
     }
 
     fn parse_assignment_expr(&mut self) -> ast::Expr {
-        let left = self.parse_equality_expr();
+        let left = self.parse_logical_or_expr();
         // TODO: add more assignment operators. *=, /=, %=
         if matches!(self.at().r#type, TokenType::Equals | TokenType::PlusEquals | TokenType::MinusEquals) {
             let operator = self.eat().value; // advance past the assignment operator to get the value of the assignment expr
