@@ -123,66 +123,32 @@ impl Codegen {
         
         match logical_expr.operator.as_str() {
             "||" => {
-                // if the left side is true, skip evaluating the right and push true to the stack
-                self.bytecode.push(constants::JMP_IF_TRUE);
+                // if the left side is true, skip evaluating the right and keep true on the stack
+                self.bytecode.push(constants::JMP_IF_TRUE_PEEK);
                 let left_pos = self.bytecode.len();
                 self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
                 
                 // generate the right side
                 self.generate_expr(&logical_expr.right);
-                // if the right side is false, skip the part that pushes true to the stack and push false instead
-                self.bytecode.push(constants::JMP_IF_FALSE);
-                let right_pos = self.bytecode.len();
-                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+                // the right side is generated and evaluated, its result stays on the stack.
                 
-                // true part
-                let true_pos = self.bytecode.len();
-                self.patch_jump(left_pos, true_pos);
-                self.bytecode.push(constants::PUSH_BOOL);
-                self.bytecode.push(1);
-                // jump over false part
-                self.bytecode.push(constants::JMP);
-                let jmp_over_false_pos = self.bytecode.len();
-                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
-                
-                // false part
-                let false_pos = self.bytecode.len();
-                self.patch_jump(right_pos, false_pos);
-                self.bytecode.push(constants::PUSH_BOOL);
-                self.bytecode.push(0);
-                let after_false_pos = self.bytecode.len();
-                self.patch_jump(jmp_over_false_pos, after_false_pos);
+                let after_right_pos = self.bytecode.len();
+                self.patch_jump(left_pos, after_right_pos);
             }
             "&&" => {
-                // if the left side is false, skip evaluating the right and push false to the stack
-                self.bytecode.push(constants::JMP_IF_FALSE);
+                // if the left side is false, skip evaluating the right and keep false on the stack
+                self.bytecode.push(constants::JMP_IF_FALSE_PEEK);
                 let left_pos = self.bytecode.len();
                 self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
-
+                
+                // pop the value from above
+                self.bytecode.push(constants::POP);
                 // generate the right side
                 self.generate_expr(&logical_expr.right);
-                // if the right side is true, skip the part that pushes false to the stack and push true instead
-                self.bytecode.push(constants::JMP_IF_TRUE);
-                let right_pos = self.bytecode.len();
-                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
+                // the right side is generated and evaluated, its result stays on the stack.
 
-                // false part
-                let false_pos = self.bytecode.len();
-                self.patch_jump(left_pos, false_pos);
-                self.bytecode.push(constants::PUSH_BOOL);
-                self.bytecode.push(0);
-                // jump over true part
-                self.bytecode.push(constants::JMP);
-                let jmp_over_true_pos = self.bytecode.len();
-                self.bytecode.extend(self.emit_u64(0)); // placeholder bytes
-                
-                // true part
-                let true_pos = self.bytecode.len();
-                self.patch_jump(right_pos, true_pos);
-                self.bytecode.push(constants::PUSH_BOOL);
-                self.bytecode.push(1);
-                let after_true_pos = self.bytecode.len();
-                self.patch_jump(jmp_over_true_pos, after_true_pos);
+                let after_right_pos = self.bytecode.len();
+                self.patch_jump(left_pos, after_right_pos);
             }
             _ => {
                 eprintln!("Generator Error: Invalid logical operator: {}", logical_expr.operator);
@@ -281,7 +247,7 @@ impl Codegen {
         }
     }
 
-    // this function needs to exist because the if statement does not know where to jump because that area is not yet generated, once it is we can patch the placeholder with the real
+    // this function needs to exist because the if statement does not know where to jump because that area is not yet generated, once it is, we can patch the placeholder with the real
     fn patch_jump(&mut self, pos: usize, target: usize) {
         let target_bytes = target.to_le_bytes();
         self.bytecode[pos..(pos + 8)].copy_from_slice(&target_bytes);
@@ -364,7 +330,7 @@ impl Codegen {
     pub fn generate(&mut self, ast: Vec<ast::Stmt>, scope: &str) -> &Vec<u8> {
         if scope != "global" && scope != "local" { panic!("Generator Error: Generate function was given an incorrect scope! Only options are global or local, the scope that was given was {}.", scope)}
 
-        // push magic number
+        // push the magic number
         self.bytecode.extend(constants::MAGIC_NUMBER_U8);
 
         // iterate through statements and expressions and turn them into operations

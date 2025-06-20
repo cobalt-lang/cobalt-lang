@@ -22,6 +22,8 @@ pub enum Opcode {
     Jmp,
     JmpIfTrue,
     JmpIfFalse,
+    JmpIfTruePeek,
+    JmpIfFalsePeek,
     Call,
     Ret,
     LoadLocal,
@@ -52,6 +54,8 @@ impl Opcode {
             0x0c => Some(Opcode::Jmp),
             0x0d => Some(Opcode::JmpIfTrue),
             0x0e => Some(Opcode::JmpIfFalse),
+            0x1a => Some(Opcode::JmpIfTruePeek),
+            0x1b => Some(Opcode::JmpIfFalsePeek),
             0x0f => Some(Opcode::Call),
             0x10 => Some(Opcode::Ret),
             0x11 => Some(Opcode::LoadLocal),
@@ -237,6 +241,9 @@ impl VM {
                         self.stack.push(Value::Bool(true))
                     }
                 }
+                Some(Opcode::Pop) => {
+                    self.stack.pop().expect("VM Error: Stack underflow!");
+                },
                 Some(Opcode::Add) => {
                     let (left, right) = self.pop_two_stack();
                     
@@ -322,6 +329,34 @@ impl VM {
                         }
                     }
                 }
+                Some(Opcode::JmpIfTruePeek) => {
+                    let address = self.fetch_u64();
+                    let condition = self.stack.last().expect("VM Error: Stack underflow!");
+                    match condition {
+                        Value::Bool(true) => {
+                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                        }
+                        Value::Bool(false) => { /* do nothing */ }
+                        _ => {
+                            eprintln!("VM Error: JmpIfTruePeek expected a boolean condition, but got type '{}'.", self.get_type_name(condition));
+                            process::exit(1);
+                        }
+                    }
+                }
+                Some(Opcode::JmpIfFalsePeek) => {
+                    let address = self.fetch_u64();
+                    let condition = self.stack.last().expect("VM Error: Stack underflow!");
+                    match condition {
+                        Value::Bool(false) => {
+                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                        }
+                        Value::Bool(true) => { /* do nothing */ }
+                        _ => {
+                            eprintln!("VM Error: JmpIfFalsePeek expected a boolean condition, but got type '{}'.", self.get_type_name(condition));
+                            process::exit(1);
+                        }
+                    }
+                }
                 Some(Opcode::Call) => {
                     let address: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do CALL operation, but converting the address into a usize failed!");
                     self.call_stack.push(self.ip);
@@ -363,7 +398,7 @@ impl VM {
                     process::exit(1);
                 }
                 _ => {
-                    todo!();
+                    todo!("Unimplemented opcode: {:x}", opcode);
                 }
             }
         }
