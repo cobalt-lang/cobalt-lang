@@ -2,6 +2,10 @@
 name = "cobalt-lang"
 version = "0.10.0"
 edition = "2024"
+authors = ["Devitzer <me@devitzer.dev>"]
+description = "A simple high level interpreted language with strong static typing."
+license = "GPL-3.0"
+repository = "https://github.com/cobalt-lang/cobalt-lang"
 
 [dependencies]
 argh = "0.1.13"
