@@ -4,7 +4,7 @@ Welcome to the source code of the Cobalt programming language!
 
 # Installation
 
-There a couple different methods that you can use to install the Cobalt programming language to your machine. <br>
+There are a couple of different methods that you can use to install the Cobalt programming language to your machine. <br>
 Skip [here](#3-install-it-via-a-package-manager) to find methods for certain Linux distros.
 
 ## 1. Prebuilt Binaries
@@ -24,7 +24,7 @@ To use this method, you first need to have Rust installed onto your machine, inc
 
 ## 3. Install it via a Package Manager
 
-This method is another easy, and official way to download the CLI tools. It only applies to certain Linux distros as of now, but we are always looking to expand.
+This method is another easy and official way to download the CLI tools. It only applies to certain Linux distros as of now, but we are always looking to expand.
 
 ### Arch Linux
 
@@ -44,7 +44,9 @@ The CLI tools are available on the AUR, maintained officially by us. You can ins
 - Try to do as little cloning as possible VM and parser do inefficient cloning.
 - More descriptive and consistent errors (always room for that!)
 - Positional errors (the error says what position in the file it's referring to)
+- Use &str type wherever possible instead of String.
+- Allow variable slots/IDs to be reused from a scope after it's popped in the generator.
 - Standard library.
 - Bytecode bytes to words translator (just a tool in the future, could maybe be written in Cobalt itself!)
-- Catch more errors at code generation stage.
+- Catch more errors at the code generation stage.
 - Include basic optimization methods including but not limited to: Constant folding, constant propagation, 

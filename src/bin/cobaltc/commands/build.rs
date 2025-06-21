@@ -63,7 +63,7 @@ pub fn run(args: Build) {
     }
 
     let mut codegen_ = generator::Codegen::new();
-    let bytecode = codegen_.generate(ast.body, "global");
+    let bytecode = codegen_.generate(ast.body);
 
     if args.debug {
         println!("{:?}", bytecode);

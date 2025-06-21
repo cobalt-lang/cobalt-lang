@@ -9,7 +9,7 @@ use crate::parser::ast;
 
 pub struct Codegen {
     bytecode: Vec<u8>,
-    variables: HashMap<String, Variable>,
+    scopes: Vec<HashMap<String, Variable>>,
     next_var_id: usize, // used to map variable names (in AST) to their IDs (in bytecode, which doesn't support string names)
     labels: HashMap<String, usize>, // used to map functions to their IP (instruction pointer), aka the byte they start at
 }
@@ -29,7 +29,7 @@ impl Codegen {
     pub fn new() -> Self {
         Self {
             bytecode: Vec::new(),
-            variables: HashMap::new(),
+            scopes: vec![HashMap::new()],
             next_var_id: 0,
             labels: HashMap::new()
         }
@@ -54,24 +54,31 @@ impl Codegen {
     }
 
     fn set_var(&mut self, ident: &String, constant: bool) {
+        let current_scope = self.scopes.last_mut().unwrap();
+        
         // make sure the variable doesn't exist first (takes up unnecessary memory)
-        if self.variables.contains_key(ident) {
-            eprintln!("Generator Error: Attempted to declare variable {}, which already exists! Try reassigning the variable using {} = <insert value here>", ident, ident);
+        if current_scope.contains_key(ident) {
+            eprintln!("Generator Error: Variable '{}' already exists in the current scope.", ident);
             process::exit(1);
         }
-
-        self.variables.insert(ident.to_string(), Variable {
+        
+        current_scope.insert(ident.clone(), Variable { 
             constant,
             id: self.next_var_id
         });
+        
         self.next_var_id += 1;
     }
 
     fn get_var(&mut self, ident: &String) -> &Variable {
-        self.variables.get(ident).unwrap_or_else(|| {
-            eprintln!("Generator Error: Could not find value {}, it does not exist in the current scope.", ident);
-            process::exit(1);
-        })
+        for scope in self.scopes.iter().rev() {
+            if let Some(var) = scope.get(ident) {
+                return var;
+            }
+        }
+        
+        eprintln!("Generator Error: Variable '{}' does not exist in any accessible scope.", ident);
+        process::exit(1);
     }
 
     fn generate_operator(&mut self, operator: &str) {
@@ -288,14 +295,17 @@ impl Codegen {
     }
 
     fn generate_block_stmt(&mut self, block_stmt: &ast::BlockStatement) {
+        self.scopes.push(HashMap::new()); // make a new scope
+        
         // generate code for each statement in the block
         for stmt in &block_stmt.body {
             self.generate_stmt(stmt);
         }
+        
+        self.scopes.pop(); // exit the scope
     }
 
     fn generate_stmt(&mut self, stmt: &ast::Stmt) {
-        // TODO: IMPLEMENT SCOPES TO BLOCK STATEMENT IN THE FUTURE (MUST BE DONE FOR v0.10.0)
         match stmt {
             ast::Stmt::VariableDeclaration(vardecl) => self.generate_vardecl_stmt(vardecl),
             ast::Stmt::IfStatement(if_stmt) => self.generate_if_stmt(if_stmt),
@@ -305,7 +315,6 @@ impl Codegen {
                 eprintln!("Generator Error: There is a program within the program, this is not allowed!");
                 process::exit(1);
             }
-            _ => todo!(),
         }
     }
 
@@ -327,9 +336,7 @@ impl Codegen {
     /// `ast`: A vector of statements
     /// 
     /// `scope`: The scope to push variables in (used to set the scope to "local" when generating function bodies recursively.) 
-    pub fn generate(&mut self, ast: Vec<ast::Stmt>, scope: &str) -> &Vec<u8> {
-        if scope != "global" && scope != "local" { panic!("Generator Error: Generate function was given an incorrect scope! Only options are global or local, the scope that was given was {}.", scope)}
-
+    pub fn generate(&mut self, ast: Vec<ast::Stmt>) -> &Vec<u8> {
         // push the magic number
         self.bytecode.extend(constants::MAGIC_NUMBER_U8);
 
