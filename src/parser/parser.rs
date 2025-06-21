@@ -3,6 +3,8 @@ use crate::lexer::tokens::{Token, TokenType};
 
 use super::ast::VariableDeclaration;
 
+use std::process;
+
 pub struct Parser {
     tokens: Vec<Token>,
     pos: usize
@@ -10,10 +12,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Parser {
-        Self {
-            tokens,
-            pos: 0
-        }
+        Self { tokens, pos: 0 }
     }
 
     fn not_eof(&self) -> bool {
@@ -70,17 +69,11 @@ impl Parser {
         let tk = self.at().r#type;
 
         match tk {
-            TokenType::Let => {
-                self.parse_variable_stmt(false)
-            }
-
-            TokenType::Const => {
-                self.parse_variable_stmt(true)
-            }
-
-            _ => {
-                ast::Stmt::Expr(self.parse_expr())
-            }
+            TokenType::Let => self.parse_variable_stmt(false),
+            TokenType::Const => self.parse_variable_stmt(true),
+            TokenType::If => self.parse_if_stmt(),
+            TokenType::OpenBrace => self.parse_block_stmt(),
+            _ => ast::Stmt::Expr(self.parse_expr())
         }
     }
 
@@ -89,16 +82,89 @@ impl Parser {
     }
 
     fn parse_assignment_expr(&mut self) -> ast::Expr {
-        let left = self.parse_additive_expr();
-
-        if self.at().r#type == TokenType::Equals {
-            self.eat(); // advance past the equals sign to get the value of the assignment expr
+        let left = self.parse_logical_or_expr();
+        // TODO: add more assignment operators. *=, /=, %=
+        if matches!(self.at().r#type, TokenType::Equals | TokenType::PlusEquals | TokenType::MinusEquals) {
+            let operator = self.eat().value; // advance past the assignment operator to get the value of the assignment expr
             let value = self.parse_assignment_expr();
             return ast::Expr::AssignmentExpr(ast::AssignmentExpr {
                 kind: ast::NodeType::AssignmentExpr,
                 assignee: Box::new(left),
+                operator,
                 value: Box::new(value)
-            })
+            });
+        }
+
+        left
+    }
+
+    fn parse_logical_or_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_logical_and_expr();
+
+        while self.at().r#type == TokenType::Or {
+            let operator = self.eat().value;
+            let right = self.parse_logical_and_expr();
+
+            left = ast::Expr::LogicalExpr(ast::LogicalExpr {
+                kind: ast::NodeType::LogicalExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator,
+            });
+        }
+
+        left
+    }
+
+    fn parse_logical_and_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_equality_expr();
+
+        while self.at().r#type == TokenType::And {
+            let operator = self.eat().value;
+            let right = self.parse_equality_expr();
+
+            left = ast::Expr::LogicalExpr(ast::LogicalExpr {
+                kind: ast::NodeType::LogicalExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator
+            });
+        }
+
+        left
+    }
+
+    fn parse_equality_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_comparison_expr();
+
+        while matches!(self.at().r#type, TokenType::EqualsEquals | TokenType::NotEqual) {
+            let operator = self.eat().value;
+            let right = self.parse_comparison_expr();
+
+            left = ast::Expr::Binary(ast::BinaryExpr {
+                kind: ast::NodeType::BinaryExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator
+            });
+        }
+
+        left
+    }
+
+    fn parse_comparison_expr(&mut self) -> ast::Expr {
+        let mut left = self.parse_additive_expr();
+
+        while matches!(self.at().r#type, TokenType::LessThan | TokenType::GreaterThan | TokenType::LessThanEqual | TokenType::GreaterThanEqual) {
+            let operator = self.eat().value;
+            let right = self.parse_additive_expr();
+
+            left = ast::Expr::Binary(ast::BinaryExpr {
+                kind: ast::NodeType::BinaryExpr,
+                left: Box::new(left),
+                right: Box::new(right),
+                operator
+            });
         }
 
         left
@@ -107,10 +173,10 @@ impl Parser {
     fn parse_additive_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_multiplicative_expr();
 
-        while matches!(self.at().value.as_str(), "+" | "-") {
+        while matches!(self.at().r#type, TokenType::Plus | TokenType::Minus) {
             let operator = self.eat().value;
             let right = self.parse_multiplicative_expr();
-            
+
             left = ast::Expr::Binary(ast::BinaryExpr {
                 kind: ast::NodeType::BinaryExpr,
                 left: Box::new(left),
@@ -125,7 +191,7 @@ impl Parser {
     fn parse_multiplicative_expr(&mut self) -> ast::Expr {
         let mut left = self.parse_unary_expr();
 
-        while matches!(self.at().value.as_str(), "*" | "/" | "%") {
+        while matches!(self.at().r#type, TokenType::Star | TokenType::Slash | TokenType::Percent) {
             let operator = self.eat().value;
             let right = self.parse_primary_expr();
 
@@ -141,15 +207,14 @@ impl Parser {
     }
 
     fn parse_unary_expr(&mut self) -> ast::Expr {
-        // TODO: ADD ! OPERATOR WHEN IMPLEMENTING IF STATEMENTS
-        if matches!(self.at().value.as_str(), "-" | "+") {
+        if matches!(self.at().r#type, TokenType::Minus | TokenType::Plus | TokenType::Not) {
             let operator = self.eat().value;
             let value = self.parse_primary_expr();
             return ast::Expr::UnaryExpr(ast::UnaryExpr {
                 kind: ast::NodeType::UnaryExpr,
                 operator,
                 value: Box::new(value)
-            })
+            });
         }
 
         self.parse_primary_expr()
@@ -159,12 +224,21 @@ impl Parser {
         let tk = self.at().r#type;
 
         match tk {
-            TokenType::Identifier => {
-                ast::Expr::Identifier(ast::Identifier { kind: ast::NodeType::Identifier, symbol: self.eat().value })
+            TokenType::Identifier => ast::Expr::Identifier(ast::Identifier { kind: ast::NodeType::Identifier, symbol: self.eat().value }),
+
+            TokenType::Number => ast::Expr::NumericLiteral(ast::NumericLiteral {
+                kind: ast::NodeType::NumericLiteral,
+                value: self.eat().value.parse::<i64>().expect("Parser Error: Failed to parse numeric literal.")
+            }),
+
+            TokenType::True => {
+                self.eat(); // eat the true token
+                ast::Expr::BooleanLiteral(ast::BooleanLiteral { kind: ast::NodeType::BooleanLiteral, value: true })
             }
 
-            TokenType::Number => {
-                ast::Expr::NumericLiteral(ast::NumericLiteral { kind: ast::NodeType::NumericLiteral, value: self.eat().value.parse::<i64>().expect("Parser Error: Failed to parse numeric literal.") })
+            TokenType::False => {
+                self.eat(); // eat the false token
+                ast::Expr::BooleanLiteral(ast::BooleanLiteral { kind: ast::NodeType::BooleanLiteral, value: false })
             }
 
             TokenType::OpenParen => {
@@ -193,5 +267,49 @@ impl Parser {
             value
         })
     }
-}
 
+    fn parse_block_stmt(&mut self) -> ast::Stmt {
+        // { body }
+        self.eat(); // eat the open brace
+        let mut body = Vec::new();
+        while self.at().r#type != TokenType::CloseBrace {
+            if !self.not_eof() {
+                eprintln!("Parser Error: Expected closing brace '}}' for block statement, got EOF.");
+                process::exit(1);
+            }
+            body.push(self.parse_stmt());
+        }
+
+        self.eat(); // eat the closing brace, we dont have to use expect because the closing brace expectation is handled in the loop
+
+        ast::Stmt::BlockStatement(ast::BlockStatement {
+            kind: ast::NodeType::BlockStatement,
+            body
+        })
+    }
+
+    fn parse_if_stmt(&mut self) -> ast::Stmt {
+        // if awer { body } or if awer stmt
+        self.eat(); // eat the if keyword
+        let test = self.parse_expr(); // the test
+        let body = Box::new(self.parse_stmt()); // can be a regular stmt or a block statement
+        let mut alternate = None;
+
+        // check for alternate condition below
+        if self.at().r#type == TokenType::Else {
+            self.eat(); // eat the else keyword
+            if self.at().r#type == TokenType::If {
+                alternate = Some(Box::new(self.parse_if_stmt())); // restart recursively with more conditions
+            } else {
+                alternate = Some(Box::new(self.parse_stmt())); // just give the non conditional statement for else
+            }
+        }
+
+        ast::Stmt::IfStatement(ast::IfStatement {
+            kind: ast::NodeType::IfStatement,
+            test,
+            alternate,
+            body,
+        })
+    }
+}

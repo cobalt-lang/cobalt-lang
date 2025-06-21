@@ -1,0 +1,14 @@
+let x = 5
+
+{
+    let y = 32
+    {
+        let z = 64
+        x # should push 5 because global scope is accessible everywhere
+        y # should push 32 because the scope above the current is accessible
+        z # should push 64 because the current scope is also accessible
+    }
+    # z # should give a generator error that z isn't available in the current scope, uncomment to test
+}
+
+# y # should give a generator error that y isn't available in the current scope, uncomment to test

@@ -1,0 +1,22 @@
+let x = 0
+let y = 0
+let z = 0
+
+# should evaluate to true, because only one side has to be true
+if true || false x = 5 else x = 9000
+
+# should evaluate to false, because both sides have to be true
+if true && false y = 1
+
+# should evaluate to true, because the right side of && evaluates to false and then it is converted with unary !
+if !(x == 5 && y != 0) z = 42
+
+# should evaluate to false, true || false evaluates to true, so we're left with true && false which evaluates to false.
+if (true || false) && false y = 7
+
+# should evaluate to true, true || false evaluates to true, and then true && true remains which evaluates to true.
+if (true || false) && true y = 8
+
+x # should push 5 to the stack
+y # should push 8 to the stack
+z # should push 42 to the stack

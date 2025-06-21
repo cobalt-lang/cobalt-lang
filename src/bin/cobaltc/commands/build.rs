@@ -34,18 +34,14 @@ pub fn run(args: Build) {
         std::process::exit(1); 
     });
 
-    let output_file_name: String;
-
-    if args.output == None {
-        let file_without_ex = files_u8::get_file_name_without_extension(&args.file).unwrap_or_else(|| {
+    let output_file_name: String = if args.output.is_none() {
+        files_u8::get_file_name_without_extension(&args.file).unwrap_or_else(|| {
             eprintln!("Error: Failed to extract file name from file positional argument. Try specifying the -o/--output flag.");
             process::exit(1);
-        });
-
-        output_file_name = file_without_ex;
+        })
     } else {
-        output_file_name = args.output.unwrap();
-    }
+        args.output.unwrap()
+    };
 
 
     let mut lexer_ = lexer::Lexer::new(file_content.chars().collect());
@@ -67,7 +63,7 @@ pub fn run(args: Build) {
     }
 
     let mut codegen_ = generator::Codegen::new();
-    let bytecode = codegen_.generate(ast.body, "global");
+    let bytecode = codegen_.generate(ast.body);
 
     if args.debug {
         println!("{:?}", bytecode);

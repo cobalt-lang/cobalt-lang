@@ -1,4 +1,5 @@
 use phf::phf_map;
+use std::process;
 
 use super::tokens::{Token, TokenType};
 
@@ -6,7 +7,11 @@ static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
     "let" => TokenType::Let,
     "const" => TokenType::Const,
     "fn" => TokenType::Fn,
-    "return" => TokenType::Return
+    "return" => TokenType::Return,
+    "true" => TokenType::True,
+    "false" => TokenType::False,
+    "if" => TokenType::If,
+    "else" => TokenType::Else,
 };
 
 pub struct Lexer {
@@ -74,18 +79,106 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
 
         match ch {
             '(' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::OpenParen });
+                tokens.push(Token { value: "(".to_string(), r#type: TokenType::OpenParen });
                 l.read();
             }
 
             ')' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::CloseParen });
+                tokens.push(Token { value: ")".to_string(), r#type: TokenType::CloseParen });
                 l.read();
             }
 
-            '+' | '-' | '/' | '*' | '%' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::BinaryOperator });
+            '{' => {
+                tokens.push(Token { value: "{".to_string(), r#type: TokenType::OpenBrace });
                 l.read();
+            }
+
+            '}' => {
+                tokens.push(Token { value: "}".to_string(), r#type: TokenType::CloseBrace });
+                l.read();
+            }
+
+            '>'  => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = ">=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::GreaterThanEqual });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: ">".to_string(), r#type: TokenType::GreaterThan });
+                }
+            }
+
+            '<' => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = "<=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::LessThanEqual });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "<".to_string(), r#type: TokenType::LessThan });
+                }
+            }
+
+            '+' => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = "+=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::PlusEquals });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "+".to_string(), r#type: TokenType::Plus });
+                }
+            }
+
+            '-' => {
+                l.read();
+                if l.peek() == '=' {
+                    let value: String = "-=".to_string();
+                    tokens.push(Token { value, r#type: TokenType::MinusEquals });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "-".to_string(), r#type: TokenType::Minus });
+                }
+            }
+
+            '/' => {
+                tokens.push(Token { value: "/".to_string(), r#type: TokenType::Slash });
+                l.read();
+            }
+
+            '*' => {
+                tokens.push(Token { value: "*".to_string(), r#type: TokenType::Star });
+                l.read();
+            }
+
+            '%' => {
+                tokens.push(Token { value: "%".to_string(), r#type: TokenType::Percent });
+                l.read();
+            }
+
+            '|' => {
+                l.read();
+                if l.peek() == '|' {
+                    let value: String = "||".to_string();
+                    tokens.push(Token { value, r#type: TokenType::Or });
+                    l.read();
+                } else {
+                    eprintln!("Lexer Error: Expected a double '||' symbol, but only received a single '|' !");
+                    process::exit(1);
+                }
+            }
+
+            '&' => {
+                l.read();
+                if l.peek() == '&' {
+                    let value: String = "&&".to_string();
+                    tokens.push(Token { value, r#type: TokenType::And });
+                    l.read();
+                } else {
+                    eprintln!("Lexer Error: Expected a double '&&' symbol, but only received a single '&' !");
+                    process::exit(1);
+                }
             }
 
             '#' => {
@@ -98,9 +191,25 @@ fn lex_fn(l: &mut Lexer) -> Vec<Token> {
             }
 
             '=' => {
-                tokens.push(Token { value: ch.to_string(), r#type: TokenType::Equals });
                 l.read();
+                if l.peek() == '=' {
+                    tokens.push(Token { value: "==".to_string(), r#type: TokenType::EqualsEquals });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "=".to_string(), r#type: TokenType::Equals });
+                }
             }
+
+            '!' => {
+                l.read();
+                if l.peek() == '=' {
+                    tokens.push(Token { value: "!=".to_string(), r#type: TokenType::NotEqual });
+                    l.read();
+                } else {
+                    tokens.push(Token { value: "!".to_string(), r#type: TokenType::Not });
+                }
+            }
+
             ':' => {
                 tokens.push(Token { value: ch.to_string(), r#type: TokenType::Colon });
                 l.read();

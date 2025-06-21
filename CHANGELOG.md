@@ -1,3 +1,26 @@
+# v0.10.0 - 06/18/2025
+
+If statements, booleans, scopes, and more!
+
+## Added
+
+- Added if statements.
+- Added booleans.
+- Added comparison operators and binary operations.
+- Added block statements, primarily meant for use for if statements, but they can also be used for function declarations later on.
+- Added proper support for scopes during generation.
+- Added logical expressions. (1 == 5 || 2 == 2)
+- Added more possible operators to assignment expressions. (+=, -=)
+- Added a new unary operator. (!)
+- Two new opcodes, `JMP_IF_TRUE_PEEK` and `JMP_IF_FALSE_PEEK`.
+- Implemented `POP` opcode in the VM. There was no operation that needed it so it wasn't implemented yet for some reason.
+
+## Changed
+
+- Added several new tasks to TODO in README.md.
+- Refactor certain functions in the VM.
+- Operators at the lexer level are now handled individually instead of under the "BinaryOperator" token type. This should make the parser faster and clarify errors.
+
 # v0.9.2 - 06/05/2025
 
 Handle calculation errors in VM.
