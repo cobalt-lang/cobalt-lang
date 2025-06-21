@@ -1,4 +1,4 @@
-# v0.10.0 - 06/18/2025
+# v0.10.0 - 06/21/2025
 
 If statements, booleans, scopes, and more!
 
