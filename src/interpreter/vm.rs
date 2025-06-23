@@ -1,6 +1,7 @@
 use std::{collections::HashMap, process};
 
 use super::constants;
+use crate::errors;
 
 #[derive(Debug)]
 pub enum Opcode {
@@ -26,8 +27,6 @@ pub enum Opcode {
     JmpIfFalsePeek,
     Call,
     Ret,
-    LoadLocal,
-    StoreLocal,
     Load,
     Store,
     Halt,
@@ -58,8 +57,6 @@ impl Opcode {
             0x1b => Some(Opcode::JmpIfFalsePeek),
             0x0f => Some(Opcode::Call),
             0x10 => Some(Opcode::Ret),
-            0x11 => Some(Opcode::LoadLocal),
-            0x12 => Some(Opcode::StoreLocal),
             0x13 => Some(Opcode::Load),
             0x14 => Some(Opcode::Store),
             0x16 => Some(Opcode::Halt),
@@ -126,8 +123,7 @@ impl VM {
 
     fn fetch_byte(&mut self) -> u8 {
         if self.ip >= self.bytecode.len() {
-            eprintln!("VM Error: Out of bounds access attempted! The VM was looking for an opcode but found nothing.");
-            process::exit(1);
+            errors::vm_err("Out of bounds access attempted! The VM was looking for an opcode but found nothing.", self.ip);
         }
         let byte = self.bytecode[self.ip];
         self.ip += 1;
@@ -136,8 +132,7 @@ impl VM {
 
     fn fetch_u64(&mut self) -> u64 {
         if self.ip + 8 >= self.bytecode.len() {
-            eprintln!("VM Error: Out of bounds access attempted! The VM was looking for a value but found nothing (or not enough bytes).");
-            process::exit(1);
+            errors::vm_err("Out of bounds access attempted! The VM was looking for a value but found nothing (or not enough bytes).", self.ip);
         }
         let mut buf = [0u8; 8];
         buf.copy_from_slice(&self.bytecode[self.ip..self.ip + 8]);
@@ -148,12 +143,10 @@ impl VM {
     // pops two values from the stack and returns them as left and right, meant for binary operations
     fn pop_two_stack(&mut self) -> (Value, Value) {
         let right = self.stack.pop().unwrap_or_else(|| {
-            eprintln!("VM Error: Stack underflow!");
-            process::exit(1);
+            errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip);
         });
         let left = self.stack.pop().unwrap_or_else(|| {
-            eprintln!("VM Error: Stack underflow!");
-            process::exit(1);
+            errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip);
         });
 
         (left, right)
@@ -169,27 +162,26 @@ impl VM {
     }
 
     // once strings come, this function will not apply for ADD opcodes
-    fn binary_int_op<F>(&mut self, op: F, op_name: &str)
+    // for op_int, 1 = division, 2 = modulus, 0 = everything else, used because it's quicker than comparing op name for errors
+    fn binary_int_op<F>(&mut self, op: F, op_name: &str, op_int: u8)
     where
         F: Fn(i64, i64) -> i64
     {
         let (left, right) = self.pop_two_stack();
 
-        match (left, right) {
+        match (&left, &right) {
             (Value::Int(l), Value::Int(r)) => {
-                if op_name == "division" && r == 0 {
-                    eprintln!("VM Error: Cannot divide by zero.");
-                    process::exit(1);
-                } else if op_name == "modulus" && r == 0 {
-                    eprintln!("VM Error: Cannot perform modulus by zero.");
-                    process::exit(1);
+                if op_int == 1 && *r == 0 {
+                    errors::vm_err("Cannot divide by zero.", self.ip);
+                } else if op_int == 2 && *r == 0 {
+                    errors::vm_err("Cannot perform modulus by zero.", self.ip);
                 }
 
-                self.stack.push(Value::Int(op(l, r)));
+                self.stack.push(Value::Int(op(*l, *r)));
             }
             _ => {
-                eprintln!("VM Error: Mismatched or unsupported types on {} operation!", op_name);
-                process::exit(1);
+                let err = format!("Mismatched or unsupported types on {} operation of type '{}' and '{}'.", op_name, self.get_type_name(&left), self.get_type_name(&right));
+                errors::vm_err(&err, self.ip);
             }
         }
     }
@@ -211,8 +203,8 @@ impl VM {
                 // TODO: change this error in the future, it flows kind of weird
                 // this error needs to be more specific about what kind of operation was done and what type that is not supported on
                 // example: VM Error: ">" is not a supported operation for type bool.
-                eprintln!("VM Error: Mismatched types or unsupported operation for {} comparison of type '{}' and '{}'.", op_name, self.get_type_name(&left), self.get_type_name(&right));
-                process::exit(1);
+                let err = format!("Mismatched or unsupported types on {} operation of type '{}' and '{}'.", op_name, self.get_type_name(&left), self.get_type_name(&right));
+                errors::vm_err(&err, self.ip);
             }
         };
 
@@ -221,8 +213,7 @@ impl VM {
 
     pub fn interpret(&mut self) {
         if !self.validate_bytecode() {
-            eprintln!("VM Error: Not a valid bytecode file!");
-            process::exit(1);
+            errors::vm_err("Not a valid bytecode file!", 4); // give a specific ip because this error just applies to the start of the file's first 4 bytes
         }
 
         loop {
@@ -242,7 +233,7 @@ impl VM {
                     }
                 }
                 Some(Opcode::Pop) => {
-                    self.stack.pop().expect("VM Error: Stack underflow!");
+                    self.stack.pop().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip));
                 },
                 Some(Opcode::Add) => {
                     let (left, right) = self.pop_two_stack();
@@ -255,30 +246,28 @@ impl VM {
                             self.stack.push(Value::Str(format!("{}{}", left_str, right_str)));
                         }
                         _ => {
-                            eprintln!("VM Error: Mismatched types on addition operation!");
-                            process::exit(1);
+                            errors::vm_err("Mismatched types on an addition operation!", self.ip);
                         }
                     }
                 }
-                Some(Opcode::Sub) => self.binary_int_op(|a , b| a - b, "subtraction"),
-                Some(Opcode::Mul) => self.binary_int_op(|a, b| a * b, "multiplication"),
-                Some(Opcode::Div) => self.binary_int_op(|a, b| a / b, "division"),
-                Some(Opcode::Mod) => self.binary_int_op(|a, b| a % b, "modulus"),
+                Some(Opcode::Sub) => self.binary_int_op(|a , b| a - b, "subtraction", 0),
+                Some(Opcode::Mul) => self.binary_int_op(|a, b| a * b, "multiplication", 0),
+                Some(Opcode::Div) => self.binary_int_op(|a, b| a / b, "division", 1),
+                Some(Opcode::Mod) => self.binary_int_op(|a, b| a % b, "modulus", 2),
                 Some(Opcode::Neg) => {
-                    let value = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let value = self.stack.pop().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip));
 
                     match value {
                         Value::Int(val) => {
                             self.stack.push(Value::Int(0 - val));
                         }
                         _ => {
-                            eprintln!("VM Error: Unsupported type for NEG operation, only numbers can be turned into negative values.");
-                            process::exit(1);
+                            errors::vm_err("Unsupported type for NEG operation, only numbers can be turned into negative values.", self.ip);
                         }
                     }
                 }
                 Some(Opcode::Not) => {
-                    let value = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let value = self.stack.pop().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip));
 
                     match value {
                         Value::Bool(val) => {
@@ -289,8 +278,7 @@ impl VM {
                             }
                         }
                         _ => {
-                            eprintln!("VM Error: Cannot apply NOT operation on a value that is not a boolean!");
-                            process::exit(1);
+                            errors::vm_err("Cannot apply NOT operation on a value that is not a boolean!", self.ip);
                         }
                     }
                 }
@@ -299,90 +287,81 @@ impl VM {
                 Some(Opcode::Lt) => self.binary_cmp_op(CmpOp::Lt, "<"),
                 Some(Opcode::Gt) => self.binary_cmp_op(CmpOp::Gt, ">"),
                 Some(Opcode::Jmp) => {
-                    self.ip = self.fetch_u64().try_into().expect("VM Error: Attempted to do JMP operation, but converting the address into a usize failed!");
+                    self.ip = self.fetch_u64().try_into().unwrap_or_else(|_| errors::vm_err("Attempted to do JMP operation, but converting the address into a usize failed!", self.ip));
                 }
                 Some(Opcode::JmpIfTrue) => {
                     let address = self.fetch_u64();
-                    let condition = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let condition = self.stack.pop().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip));
                     match condition {
                         Value::Bool(true) => {
-                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                            self.ip = address.try_into().unwrap_or_else(|_| errors::vm_err("Converting address to usize failed!", self.ip));
                         }
                         Value::Bool(false) => { /* do nothing */ }
                         _ => {
-                            eprintln!("VM Error: JmpIfTrue expected a boolean condition, but got type '{}'.", self.get_type_name(&condition));
-                            process::exit(1);
+                            let err = format!("JmpIfTrue expected a boolean condition, but got type '{}'.", self.get_type_name(&condition));
+                            errors::vm_err(&err, self.ip);
                         }
                     }
                 }
                 Some(Opcode::JmpIfFalse) => {
                     let address = self.fetch_u64();
-                    let condition = self.stack.pop().expect("VM Error: Stack underflow!");
+                    let condition = self.stack.pop().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip));
                     match condition {
                         Value::Bool(false) => {
-                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                            self.ip = address.try_into().unwrap_or_else(|_| errors::vm_err("Converting address to usize failed!", self.ip));
                         }
                         Value::Bool(true) => { /* do nothing */ }
                         _ => {
-                            eprintln!("VM Error: JmpIfFalse expected a boolean condition, but got type '{}'.", self.get_type_name(&condition));
-                            process::exit(1);
+                            let err = format!("JmpIfFalse expected a boolean condition, but got type '{}'.", self.get_type_name(&condition));
+                            errors::vm_err(&err, self.ip);
                         }
                     }
                 }
                 Some(Opcode::JmpIfTruePeek) => {
                     let address = self.fetch_u64();
-                    let condition = self.stack.last().expect("VM Error: Stack underflow!");
+                    let condition = self.stack.last().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip));
                     match condition {
                         Value::Bool(true) => {
-                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                            self.ip = address.try_into().unwrap_or_else(|_| errors::vm_err("Converting address to usize failed!", self.ip));
                         }
                         Value::Bool(false) => { /* do nothing */ }
                         _ => {
-                            eprintln!("VM Error: JmpIfTruePeek expected a boolean condition, but got type '{}'.", self.get_type_name(condition));
-                            process::exit(1);
+                            let err = format!("JmpIfTruePeek expected a boolean condition, but got type '{}'.", self.get_type_name(condition));
+                            errors::vm_err(&err, self.ip);
                         }
                     }
                 }
                 Some(Opcode::JmpIfFalsePeek) => {
                     let address = self.fetch_u64();
-                    let condition = self.stack.last().expect("VM Error: Stack underflow!");
+                    let condition = self.stack.last().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip));
                     match condition {
                         Value::Bool(false) => {
-                            self.ip = address.try_into().expect("VM Error: Converting address to usize failed!");
+                            self.ip = address.try_into().unwrap_or_else(|_| errors::vm_err("Converting address to usize failed!", self.ip));
                         }
                         Value::Bool(true) => { /* do nothing */ }
                         _ => {
-                            eprintln!("VM Error: JmpIfFalsePeek expected a boolean condition, but got type '{}'.", self.get_type_name(condition));
-                            process::exit(1);
+                            let err = format!("JmpIfFalsePeek expected a boolean condition, but got type '{}'.", self.get_type_name(condition));
+                            errors::vm_err(&err, self.ip);
                         }
                     }
                 }
                 Some(Opcode::Call) => {
-                    let address: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do CALL operation, but converting the address into a usize failed!");
+                    let address: usize = self.fetch_u64().try_into().unwrap_or_else(|_| errors::vm_err("Attempted to do CALL operation, but converting the address into a usize failed!", self.ip));
                     self.call_stack.push(self.ip);
                     self.ip = address;
                 }
                 Some(Opcode::Ret) => {
-                    let address = self.call_stack.pop().expect("VM Error: Call stack underflow! RET operation failed.");
+                    let address = self.call_stack.pop().unwrap_or_else(|| errors::vm_err("Call stack underflow! RET operation failed.", self.ip));
                     self.ip = address;
                 }
-                Some(Opcode::LoadLocal) => {
-                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do LOAD_LOCAL operation, but converting the variable name into a usize failed!");
-                    let value = self.local.get(&index).expect("VM Error: Tried to load a local variable that does not exist!");
-                    self.stack.push(value.clone());
-                }
-                Some(Opcode::StoreLocal) => {
-                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do STORE operation, but converting the variable name into a usize failed!");
-                    self.local.insert(index, self.stack.pop().expect("VM Error: Stack underflow!"));
-                }
                 Some(Opcode::Load) => {
-                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do LOAD operation, but converting the variable name into a usize failed!");
-                    let value = self.global.get(&index).expect("VM Error: Tried to load a variable that does not exist!");
+                    let index: usize = self.fetch_u64().try_into().unwrap_or_else(|_| errors::vm_err("Attempted to do LOAD operation, but converting the variable name into a usize failed!", self.ip));
+                    let value = self.global.get(&index).unwrap_or_else(|| errors::vm_err(format!("Tried to load variable at index '{}' that does not exist!", &index).as_str(), self.ip));
                     self.stack.push(value.clone());
                 }
                 Some(Opcode::Store) => {
-                    let index: usize = self.fetch_u64().try_into().expect("VM Error: Attempted to do STORE operation, but converting the variable name into a usize failed!");
-                    self.global.insert(index, self.stack.pop().expect("VM Error: Stack underflow!"));
+                    let index: usize = self.fetch_u64().try_into().unwrap_or_else(|_| errors::vm_err("Attempted to do STORE operation, but converting the variable name into a usize failed!", self.ip));
+                    self.global.insert(index, self.stack.pop().unwrap_or_else(|| errors::vm_err(errors::VMERR_STACK_UNDERFLOW, self.ip)));
                 }
                 Some(Opcode::Halt) => {
                     if self.debug_mode {
@@ -394,8 +373,8 @@ impl VM {
                     process::exit(0);
                 }
                 None => {
-                    eprintln!("VM Error: Expected opcode, received: {:x}, at IP: {}", opcode, self.ip);
-                    process::exit(1);
+                    let err = format!("Expected opcode, received: {:x}, at IP: {}", opcode, self.ip);
+                    errors::vm_err(&err, self.ip);
                 }
                 _ => {
                     todo!("Unimplemented opcode: {:x}", opcode);

@@ -3,5 +3,5 @@
 0 / 5 # this should push 0, no error
 0 % 5 # this should push 0, no error
 # you can comment out either of the lines below to test out the individual errors
-5 / 0 # this should give a cannot divide by zero error
+# 5 / 0 # this should give a cannot divide by zero error
 5 % 0 # this should give modulus cannot divide by zero error

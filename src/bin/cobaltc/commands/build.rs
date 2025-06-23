@@ -26,12 +26,12 @@ pub struct Build {
 pub fn run(args: Build) {
     let file_path: PathBuf = env::current_dir().unwrap_or_else(|_| {
         eprintln!("Error getting current directory");
-        std::process::exit(1);
+        process::exit(1);
     });
 
     let file_content = std::fs::read_to_string(file_path.join(&args.file)).unwrap_or_else(|e| { 
         eprintln!("Error: Could not open file: {}", e); 
-        std::process::exit(1); 
+        process::exit(1); 
     });
 
     let output_file_name: String = if args.output.is_none() {

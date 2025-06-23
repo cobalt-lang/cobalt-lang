@@ -3,3 +3,4 @@ pub mod parser;
 pub mod interpreter;
 pub mod codegen;
 pub mod utils;
+pub mod errors;

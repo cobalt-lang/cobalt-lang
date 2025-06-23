@@ -334,8 +334,6 @@ impl Codegen {
     /// Generate a bytecode array (that can be written to bytecode files and interpreted) based off the parser's produced AST.
     /// 
     /// `ast`: A vector of statements
-    /// 
-    /// `scope`: The scope to push variables in (used to set the scope to "local" when generating function bodies recursively.) 
     pub fn generate(&mut self, ast: Vec<ast::Stmt>) -> &Vec<u8> {
         // push the magic number
         self.bytecode.extend(constants::MAGIC_NUMBER_U8);

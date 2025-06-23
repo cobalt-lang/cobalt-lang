@@ -35,8 +35,6 @@ pub const CALL: u8 = 0x0f; // CALL <address>, it's similar to JMP, but it also s
 // FUNCTION RELATED
 
 pub const RET: u8 = 0x10; // RET (it changes the IP to the most recent one in the call stack)
-pub const LOAD_LOCAL: u8 = 0x11; // LOAD_LOCAL 0
-pub const STORE_LOCAL: u8 = 0x12; // STORE_LOCAL <TYPE> 0
 
 // MEMORY ACCESS (VARIABLE STORAGE)
 

@@ -1,3 +1,19 @@
+# v0.10.1 - 06/23/2025
+
+New VM error system!
+
+## Added
+
+- New VM error system! This will act as an experiment, and if it goes well, this system will be added to the lexer, parser, and generator as well.
+- VM errors now show slightly more detail.
+
+## Removed
+- `LOAD_LOCAL` and `STORE_LOCAL` opcodes. Scopes have been implemented inside the generator, making them obsolete.
+
+## Changed
+
+- Minor code refactoring across the project.
+
 # v0.10.0 - 06/21/2025
 
 If statements, booleans, scopes, and more!

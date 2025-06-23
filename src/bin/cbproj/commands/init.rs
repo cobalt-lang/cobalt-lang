@@ -97,7 +97,7 @@ pub fn run() {
         .interact_text()
         .unwrap();
 
-    // repo, but if the repo var is empty the value of this var will be None, it's better for serializing in the cbproj.toml file
+    // repo, but if the repo var is empty, the value of this var will be None, it's better for serializing in the cbproj.toml file
     let repo_asopt: Option<String> = if repo.is_empty() { None } else { Some(repo) };
     let license_asopt: Option<String> = if license.is_empty() { None } else { Some(license) };
 
