@@ -1,3 +1,14 @@
+# v0.10.2 - 10/02/2025 (NOT RELEASED)
+
+Update dependencies, ease back into development.
+
+## Updated
+
+- Updated dialoguer from v0.11.0 to v0.12.0 (affects `cbproj`)
+- Updated phf from v0.12.1 to v0.13.1
+- Updated toml from v0.8.21 to v0.9.7
+- Updated serde from v1.0.219 to v1.0.228
+
 # v0.10.1 - 06/23/2025
 
 New VM error system!

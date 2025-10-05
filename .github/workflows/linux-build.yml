@@ -1,0 +1,68 @@
+name: Build Linux Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Cross-compile for Linux (aarch64 & riscv64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get the tag
+        run: |
+          git fetch --tags --force
+          tag=$(git describe --tags --abbrev=0 --always)
+          echo "TAG_NAME=$tag" >> $GITHUB_ENV
+
+      - name: Install Rust targets
+        run: |
+          rustup target add aarch64-unknown-linux-gnu
+          rustup target add riscv64gc-unknown-linux-gnu
+
+      - name: Install cross-compilers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-riscv64-linux-gnu
+
+      - name: Build for aarch64
+        env:
+          CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+        run: |
+          cargo build --release --target aarch64-unknown-linux-gnu
+
+      - name: Build for riscv64
+        env:
+          CC_riscv64gc_unknown_linux_gnu: riscv64-linux-gnu-gcc
+        run: |
+          cargo build --release --target riscv64gc-unknown-linux-gnu
+
+      - name: Create tar.xz for aarch64
+        run: |
+          mkdir -p dist/aarch64
+          cp target/aarch64-unknown-linux-gnu/release/{cbproj,cobalt,cobaltc} dist/aarch64/
+          tar -cJf cobalt-${{ env.TAG_NAME }}-linux-aarch64.tar.xz -C dist/aarch64 .
+
+      - name: Create tar.xz for riscv64
+        run: |
+          mkdir -p dist/riscv64
+          cp target/riscv64gc-unknown-linux-gnu/release/{cbproj,cobalt,cobaltc} dist/riscv64/
+          tar -cJf cobalt-${{ env.TAG_NAME }}-linux-riscv64.tar.xz -C dist/riscv64 .
+
+      - name: Upload aarch64 tar.xz
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobalt-${{ env.TAG_NAME }}-linux-aarch64
+          path: cobalt-${{ env.TAG_NAME }}-linux-aarch64.tar.xz
+
+      - name: Upload riscv64 tar.xz
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobalt-${{ env.TAG_NAME }}-linux-riscv64
+          path: cobalt-${{ env.TAG_NAME }}-linux-riscv64.tar.xz
