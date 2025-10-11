@@ -1,6 +1,6 @@
 [package]
 name = "cobalt-lang"
-version = "0.10.1"
+version = "0.10.2"
 edition = "2024"
 authors = ["Devitzer <me@devitzer.dev>"]
 description = "A simple high level interpreted language with strong static typing."
