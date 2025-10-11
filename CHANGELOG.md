@@ -1,3 +1,12 @@
+# v0.11.0 - TBD
+
+Optimizations implemented.
+
+## Added
+
+- Constant variables will now be evaluated at code generation time rather than runtime (constant folding)
+- Constant variables will now be replaced with their values rather than being loaded at runtime (constant propagation)
+
 # v0.10.2 - 10/11/2025
 
 Update dependencies, ease back into development.
